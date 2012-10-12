@@ -73,7 +73,7 @@ begin
   ShowRejectsReason := GetParamDef('ShowRejectsReason', False);
   lastRequestWithRejectsVariant := GetParamDef('LastRequestWithRejects', EncodeDate(2012, 09, 01));
   LastRequestWithRejects := VarToDateTime(lastRequestWithRejectsVariant);
-  NewRejectsDayCount := GetParamDef('NewRejectsDayCount', 7);
+  NewRejectsDayCount := GetParamDef('NewRejectsDayCount', 90);
 end;
 
 class procedure TGlobalSettingParams.SaveLastRequestWithRejects(

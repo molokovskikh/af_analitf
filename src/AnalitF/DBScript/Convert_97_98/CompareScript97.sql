@@ -14,4 +14,22 @@ set
 where
   Name = "NewRejectsDayCount";
 
+update analitf.globalparams
+set
+  Value = "33023"
+where
+  Name = "lnModifiedWaybillByReject";
+
+update analitf.globalparams
+set
+  Value = "33023"
+where
+  Name = "lnRejectedWaybillPosition";
+
+update analitf.globalparams
+set
+  Value = "32896"
+where
+  Name = "lnUnrejectedWaybillPosition";
+
 update analitf.params set ProviderMDBVersion = 98 where id = 0;
