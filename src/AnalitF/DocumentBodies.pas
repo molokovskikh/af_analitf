@@ -2551,24 +2551,24 @@ end;
 
 function TDocumentBodiesForm.GetPrintedDocumentLineCount: Integer;
 var
-  LastId : Int64;
+  filter : String;
+  sql : String;
+  count : Variant;
 begin
   Result := 0;
-  adsDocumentBodies.DisableControls;
-  try
-    LastId := adsDocumentBodiesId.Value;
-    adsDocumentBodies.First;
-    while not adsDocumentBodies.Eof do begin
-      if adsDocumentBodiesPrinted.Value then
-        Inc(Result);
-      adsDocumentBodies.Next;
-    end;
+  sql := 'select count(dbodies.Id) from DocumentBodies dbodies where dbodies.DocumentId = :DocumentId and dbodies.Printed = 1 ';
+  filter := GetNDSFilter();
+  if Length(filter) > 0 then
+    sql :=  sql + ' and ' + filter;
 
-    if not adsDocumentBodies.Locate('Id', LastId, []) then
-      adsDocumentBodies.First;
-  finally
-    adsDocumentBodies.EnableControls;
-  end;
+  count := DBProc.QueryValue(
+    DM.MainConnection,
+    sql,
+    ['DocumentId'],
+    [FDocumentId]);
+
+  if not VarIsNull(count) then
+    Result := count;
 end;
 
 procedure TDocumentBodiesForm.SetPrintedOnDocumentLines(value: Boolean);
