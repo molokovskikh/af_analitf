@@ -183,6 +183,8 @@ begin
   if adsAwaitedProducts.Active then
     adsAwaitedProducts.Close;
   adsAwaitedProducts.Open;
+  if not adsAwaitedProducts.Locate('CoreExists', True, []) then
+    adsAwaitedProducts.First;
 end;
 
 procedure TAwaitedProductsForm.RefreshAwaitedProducts;
