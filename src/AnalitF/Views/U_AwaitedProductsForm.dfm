@@ -65,6 +65,7 @@ inherited AwaitedProductsForm: TAwaitedProductsForm
     TitleFont.Style = []
     OnEnter = dbgAwaitedProductsEnter
     OnExit = dbgAwaitedProductsExit
+    OnGetCellParams = dbgAwaitedProductsGetCellParams
     OnKeyDown = dbgAwaitedProductsKeyDown
     SearchPosition = spBottom
     Columns = <
@@ -134,7 +135,8 @@ inherited AwaitedProductsForm: TAwaitedProductsForm
       '  AwaitedProducts.CatalogId,'
       '  AwaitedProducts.ProducerId,'
       '  concat(catalogs.name, '#39' '#39', catalogs.form) as CatalogName,'
-      '  Producers.Name as ProducerName'
+      '  Producers.Name as ProducerName,'
+      '  CATALOGS.CoreExists'
       'from'
       '  AwaitedProducts'
       '  inner join CATALOGS on '
@@ -160,6 +162,9 @@ inherited AwaitedProductsForm: TAwaitedProductsForm
     object adsAwaitedProductsProducerName: TStringField
       FieldName = 'ProducerName'
       Size = 255
+    end
+    object adsAwaitedProductsCoreExists: TBooleanField
+      FieldName = 'CoreExists'
     end
   end
   object dsAwaitedProducts: TDataSource

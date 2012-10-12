@@ -28,6 +28,7 @@ type
     pBottom: TPanel;
     dbgCore: TToughDBGrid;
     tmrUpdateOffers: TTimer;
+    adsAwaitedProductsCoreExists: TBooleanField;
     procedure FormCreate(Sender: TObject);
     procedure FormHide(Sender: TObject);
     procedure sbDeleteClick(Sender: TObject);
@@ -44,6 +45,9 @@ type
     procedure dbgCoreGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure sbAddClick(Sender: TObject);
+    procedure dbgAwaitedProductsGetCellParams(Sender: TObject;
+      Column: TColumnEh; AFont: TFont; var Background: TColor;
+      State: TGridDrawState);
   private
     { Private declarations }
     procedure OpenAwaitedProducts;
@@ -584,6 +588,14 @@ begin
   finally
     FreeAndNil(AddAwaitedProducts);
   end;
+end;
+
+procedure TAwaitedProductsForm.dbgAwaitedProductsGetCellParams(
+  Sender: TObject; Column: TColumnEh; AFont: TFont; var Background: TColor;
+  State: TGridDrawState);
+begin
+  if not adsAwaitedProductsCoreExists.Value then
+    Background := clSilver;
 end;
 
 end.
