@@ -276,6 +276,7 @@ begin
   adsSupplierPromotions.ParamByName('SupplierId').Value := supplierId;
 
   FOpenWithSearch := OpenWithSearch;
+  actFlipCore.Visible := not FOpenWithSearch;
   if adsProducers.Active then
     adsProducers.Close;
   adsProducers.ParamByName( 'PriceCode').Value:=PriceCode;
