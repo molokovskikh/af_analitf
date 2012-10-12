@@ -172,7 +172,8 @@ uses
   U_LegendHolder in 'BusinessLogic\U_LegendHolder.pas',
   U_WaybillGridFactory in 'Views\U_WaybillGridFactory.pas',
   U_AwaitedProductsForm in 'Views\U_AwaitedProductsForm.pas' {AwaitedProductsForm},
-  U_AddAwaitedProducts in 'Views\U_AddAwaitedProducts.pas' {AddAwaitedProducts};
+  U_AddAwaitedProducts in 'Views\U_AddAwaitedProducts.pas' {AddAwaitedProducts},
+  U_CheckTCPThread in 'Helpers\U_CheckTCPThread.pas';
 
 {$R *.RES}
 {$R Progress.RES}

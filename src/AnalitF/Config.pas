@@ -13,7 +13,8 @@ uses
   GlobalSettingParams,
   U_ExchangeLog,
   DBGridHelper,
-  U_LegendHolder;
+  U_LegendHolder,
+  U_CheckTCPThread;
 
 type
   TConfigChange = (ccOk, ccHTTPName, ccHTTPPassword, ccHTTPHost);
@@ -97,6 +98,7 @@ type
     DBCheckBox2: TDBCheckBox;
     dbchbGroupByProducts: TDBCheckBox;
     LegendColorDialog: TColorDialog;
+    bbTestConnection: TBitBtn;
     procedure btnOkClick(Sender: TObject);
     procedure itmRasCreateClick(Sender: TObject);
     procedure itmRasEditClick(Sender: TObject);
@@ -119,6 +121,7 @@ type
     procedure udHistoryDayCountClick(Sender: TObject; Button: TUDBtnType);
     procedure eHTTPPassChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure bbTestConnectionClick(Sender: TObject);
   private
     HTTPNameChanged, HTTPPassChanged : Boolean;
     OldHTTPName : String;
@@ -1360,6 +1363,50 @@ begin
       dataSet.Post;
       dbgLegends.Invalidate;
     end;
+  end;
+end;
+
+procedure TConfigForm.bbTestConnectionClick(Sender: TObject);
+var
+  state : TCheckTCPResult;
+  connectionMessage : String;
+
+  function SpeedToTextLevel(speed : Int64) : String;
+  const
+    B = 1; //byte
+    KB = 1024 * B; //kilobyte
+    MB = 1024 * KB; //megabyte
+    GB = 1024 * MB; //gigabyte
+  begin
+    Result := '';
+    speed := speed * 8;
+    if speed < 10 * KB then
+      Result := 'неудовл'
+    else
+    if (10 * KB <= speed) and (speed <= 200 * KB) then
+      Result := 'удов'
+    else
+    if (200 * KB < speed) and (speed <= 1024 * KB) then
+      Result := 'хор'
+    else
+    if (1024 * KB < speed) then
+      Result := 'отл';
+  end;
+
+begin
+  state := CheckTCPConnection();
+  if state.Error then
+    AProc.MessageBox(
+        'В процессе теста соединения возникли ошибки.'#13#10
+        + 'Пожалуйста, свяжитесь со службой технической поддержки для получения инструкций.',
+        MB_ICONERROR)
+  else begin
+    connectionMessage :=
+      'Результаты теста соединения:'#13#10+
+      '  - доступ к порту 80: ' + IfThen(state.connectTo80, 'OK', 'нет доступа') + #13#10 +
+      '  - доступ к порту 443: ' + IfThen(state.connectTo443, 'OK', 'нет доступа') + #13#10 +
+      '  - скорость подключения: ' + SpeedToTextLevel(state.downloadSpeed) + ' (' + FormatSpeedSize(state.downloadSpeed) + ')';
+    AProc.MessageBox(connectionMessage, MB_ICONINFORMATION);
   end;
 end;
 
