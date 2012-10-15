@@ -118,7 +118,8 @@ uses Main, AProc, DModule, Retry, NotFound, Constant, Compact, NotOrders,
   AddressController,
   UserMessageParams,
   SupplierController,
-  U_frmOldOrdersDelete;
+  U_frmOldOrdersDelete,
+  U_AwaitedProductsForm;
 
 {$R *.DFM}
 
@@ -126,10 +127,15 @@ function RunExchange( AExchangeActions: TExchangeActions=[eaGetPrice]): Boolean;
 var
 //  hMenuHandle: HMENU;
   needAuth : Boolean;
+  needShowAwaitedProducts,
+  needShowRejectsWaybills : Boolean;
+  questResult : TModalResult;
 begin
   NeedRetrySendOrder := False;
   NeedEditCurrentOrders := False;
   NeedShowMiniMail := False;
+  needShowAwaitedProducts := False;
+  needShowRejectsWaybills := False;
   //Перед запуском взаимодействия с сервером закрываем все дочерние окна
   MainForm.FreeChildForms;
   //Отображаем панель с рекламой и контактами
@@ -278,11 +284,20 @@ begin
   then begin
     GetAddressController.UpdateAddresses(DM.MainConnection, DM.adtClientsCLIENTID.Value);
     GetSupplierController.UpdateSuppliers(DM.MainConnection);
-    AProc.MessageBox('Обновление завершено успешно.', MB_OK or MB_ICONINFORMATION);
-{$ifdef DEBUG}
-    if GlobalExchangeParams.AwaitedProductsExists then
-      AProc.MessageBox('Есть ожидаемые позиции.', MB_OK or MB_ICONINFORMATION);
-{$endif}
+
+    GlobalExchangeParams.NewRejectsExists := False;
+    GlobalExchangeParams.AwaitedProductsExists := False;
+    if not GlobalExchangeParams.AwaitedProductsExists
+      and not GlobalExchangeParams.NewRejectsExists
+    then
+      AProc.MessageBox('Обновление завершено успешно.', MB_OK or MB_ICONINFORMATION)
+    else begin
+      questResult := ShowQuestionAfterUpdate(GlobalExchangeParams.AwaitedProductsExists, GlobalExchangeParams.NewRejectsExists);
+      if questResult = mrCancel then
+        needShowRejectsWaybills := True;
+      if questResult = mrRetry then
+        needShowAwaitedProducts := True;
+    end;
     if not GetNetworkSettings.IsNetworkVersion then
       if not WaybillsHelper.CheckWaybillFolders(DM.MainConnection) then
         AProc.MessageBox('Необходимо настроить папки для загрузки накладных на форме "Конфигурация"', MB_ICONWARNING);
@@ -395,6 +410,12 @@ begin
         else
           ShowDocumentHeaders;
       end;
+
+  if Result and needShowRejectsWaybills then
+    ShowDocumentHeadersByNewRejects;
+
+  if Result and needShowAwaitedProducts then
+    ShowAwaitedProducts;
 
   finally
     BatchFileName := '';

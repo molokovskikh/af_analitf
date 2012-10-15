@@ -787,4 +787,13 @@ object frmOldOrdersDelete: TfrmOldOrdersDelete
     ModalResult = 2
     TabOrder = 1
   end
+  object btnRetry: TButton
+    Left = 42
+    Top = 73
+    Width = 75
+    Height = 25
+    ModalResult = 4
+    TabOrder = 2
+    Visible = False
+  end
 end
