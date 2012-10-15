@@ -7,12 +7,14 @@ uses
   Dialogs, Child, ExtCtrls, GridsEh, DBGridEh, ToughDBGrid, DB, MemDS,
   DBAccess, MyAccess, Buttons, StrHlder,
   Constant,
-  StrUtils;
+  StrUtils,
+  U_framePosition,
+  ActnList,
+  U_frameLegend, StdCtrls, DBCtrls;
 
 type
   TAwaitedProductsForm = class(TChildForm)
     pButtons: TPanel;
-    dbgAwaitedProducts: TToughDBGrid;
     adsAwaitedProducts: TMyQuery;
     adsAwaitedProductsId: TLargeintField;
     adsAwaitedProductsCatalogId: TLargeintField;
@@ -26,9 +28,40 @@ type
     shCoreUpdate: TStrHolder;
     shCoreRefresh: TStrHolder;
     pBottom: TPanel;
-    dbgCore: TToughDBGrid;
     tmrUpdateOffers: TTimer;
     adsAwaitedProductsCoreExists: TBooleanField;
+    pGrid: TPanel;
+    dbgAwaitedProducts: TToughDBGrid;
+    adsAwaitedProductsDescriptionId: TLargeintField;
+    adsAwaitedProductsMnnId: TLargeintField;
+    adsAwaitedProductsCatalogVitallyImportant: TBooleanField;
+    adsAwaitedProductsCatalogMandatoryList: TBooleanField;
+    adsAwaitedProductsFullCode: TLargeintField;
+    ActionList: TActionList;
+    pPreviousOrders: TPanel;
+    pCore: TPanel;
+    dbgCore: TToughDBGrid;
+    gbPrevOrders: TGroupBox;
+    dbgHistory: TToughDBGrid;
+    gbFirmInfo: TGroupBox;
+    lblSupportPhone: TLabel;
+    dbtSupportPhone: TDBText;
+    dbmContactInfo: TDBMemo;
+    dsPreviosOrders: TDataSource;
+    adsPreviosOrders: TMyQuery;
+    adsPreviosOrdersFullCode: TLargeintField;
+    adsPreviosOrdersCode: TStringField;
+    adsPreviosOrdersCodeCR: TStringField;
+    adsPreviosOrdersSynonymName: TStringField;
+    adsPreviosOrdersSynonymFirm: TStringField;
+    adsPreviosOrdersOrderCount: TIntegerField;
+    adsPreviosOrdersOrderDate: TDateTimeField;
+    adsPreviosOrdersPriceName: TStringField;
+    adsPreviosOrdersRegionName: TStringField;
+    adsPreviosOrdersPrice: TFloatField;
+    adsPreviosOrdersAwait: TBooleanField;
+    adsPreviosOrdersJunk: TBooleanField;
+    adsPreviosOrdersPeriod: TStringField;
     procedure FormCreate(Sender: TObject);
     procedure FormHide(Sender: TObject);
     procedure sbDeleteClick(Sender: TObject);
@@ -62,6 +95,7 @@ type
     procedure adsCoreBeforePost(DataSet: TDataSet);
 
     procedure UpdateOffers(DataSet: TDataSet);
+    procedure UpdateGridOnLegend(Sender : TObject);
   public
     { Public declarations }
     adsCore : TMyQuery;
@@ -123,6 +157,12 @@ type
     adsCoreRetailVitallyImportant: TBooleanField;
 
     adsCoreNamePromotionsCount: TIntegerField;
+
+    adsCoreSupportPhone : TStringField;
+    adsCoreOperativeInfo : TMemoField;
+
+    framePosition : TframePosition;
+    frameLegend : TframeLegend;
   end;
 
 procedure ShowAwaitedProducts;
@@ -167,8 +207,16 @@ begin
   inherited;
   NeedFirstOnDataSet := False;
 
+  frameLegend := TframeLegend.CreateFrame(Self, True, False, True);
+  frameLegend.Parent := pCore;
+  frameLegend.Align := alBottom;
+  frameLegend.UpdateGrids := UpdateGridOnLegend;
+
+  framePosition := TframePosition.AddFrame(Self, pGrid, dsAwaitedProducts, 'CatalogName', 'MnnId', ShowDescriptionAction);
   dbgAwaitedProducts.PopupMenu := nil;
   dbgCore.DataSource := dsCore;
+  dbtSupportPhone.DataSource := dsCore;
+  dbmContactInfo.DataSource := dsCore;
 
   TDBGridHelper.RestoreColumnsLayout(dbgAwaitedProducts, Self.ClassName);
   TDBGridHelper.RestoreColumnsLayout(dbgCore, Self.ClassName);
@@ -180,6 +228,8 @@ end;
 
 procedure TAwaitedProductsForm.OpenAwaitedProducts;
 begin
+  adsPreviosOrders.ParamByName('ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+  adsPreviosOrders.ParamByName( 'GroupByProducts').Value := DM.adtParams.FieldByName( 'GroupByProducts').AsBoolean;
   if adsAwaitedProducts.Active then
     adsAwaitedProducts.Close;
   adsAwaitedProducts.Open;
@@ -385,6 +435,9 @@ begin
   adsCoreRetailVitallyImportant := TDataSetHelper.AddBooleanField(adsCore, 'RetailVitallyImportant');
 
   adsCoreNamePromotionsCount := TDataSetHelper.AddIntegerField(adsCore, 'NamePromotionsCount');
+
+  adsCoreSupportPhone := TDataSetHelper.AddStringField(adsCore, 'SupportPhone');
+  adsCoreOperativeInfo := TDataSetHelper.AddMemoField(adsCore, 'OperativeInfo');
 end;
 
 procedure TAwaitedProductsForm.adsCoreAfterPost(DataSet: TDataSet);
@@ -534,10 +587,16 @@ end;
 procedure TAwaitedProductsForm.tmrUpdateOffersTimer(Sender: TObject);
 begin
   tmrUpdateOffers.Enabled := False;
+  if adsPreviosOrders.Active then
+    adsPreviosOrders.Close;
   if adsCore.Active then
     adsCore.Close;
   if adsAwaitedProducts.Active and not adsAwaitedProducts.IsEmpty
   then begin
+    adsPreviosOrders.ParamByName( 'GroupByProducts').Value := False;
+    adsPreviosOrders.ParamByName( 'FullCode').Value := adsAwaitedProductsCatalogId.Value;
+    adsPreviosOrders.ParamByName( 'ProductId').Value := adsAwaitedProductsCatalogId.Value;
+    adsPreviosOrders.Open;
     adsCore.ParamByName( 'CatalogId').Value := adsAwaitedProductsCatalogId.Value;
     adsCore.Open;
     if not adsAwaitedProductsProducerId.IsNull
@@ -603,6 +662,11 @@ procedure TAwaitedProductsForm.dbgAwaitedProductsGetCellParams(
 begin
   if not adsAwaitedProductsCoreExists.Value then
     Background := clSilver;
+end;
+
+procedure TAwaitedProductsForm.UpdateGridOnLegend(Sender: TObject);
+begin
+  dbgCore.Invalidate;
 end;
 
 end.

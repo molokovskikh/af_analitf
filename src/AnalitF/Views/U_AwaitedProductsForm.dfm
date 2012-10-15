@@ -32,97 +32,267 @@ inherited AwaitedProductsForm: TAwaitedProductsForm
       OnClick = sbDeleteClick
     end
   end
-  object dbgAwaitedProducts: TToughDBGrid [1]
-    Tag = 16
-    Left = 0
-    Top = 41
-    Width = 684
-    Height = 239
-    Align = alClient
-    AutoFitColWidths = True
-    DataSource = dsAwaitedProducts
-    Flat = True
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -12
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    FooterColor = clWindow
-    FooterFont.Charset = DEFAULT_CHARSET
-    FooterFont.Color = clWindowText
-    FooterFont.Height = -11
-    FooterFont.Name = 'MS Sans Serif'
-    FooterFont.Style = []
-    Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgRowSelect, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
-    OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghRowHighlight]
-    ParentFont = False
-    ReadOnly = True
-    TabOrder = 1
-    TitleFont.Charset = DEFAULT_CHARSET
-    TitleFont.Color = clWindowText
-    TitleFont.Height = -11
-    TitleFont.Name = 'MS Sans Serif'
-    TitleFont.Style = []
-    OnEnter = dbgAwaitedProductsEnter
-    OnExit = dbgAwaitedProductsExit
-    OnGetCellParams = dbgAwaitedProductsGetCellParams
-    OnKeyDown = dbgAwaitedProductsKeyDown
-    SearchPosition = spBottom
-    Columns = <
-      item
-        EditButtons = <>
-        FieldName = 'CatalogName'
-        Footers = <>
-        Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077
-        Width = 459
-      end
-      item
-        EditButtons = <>
-        FieldName = 'ProducerName'
-        Footers = <>
-        Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
-        Width = 200
-      end>
-  end
-  object pBottom: TPanel [2]
+  object pBottom: TPanel [1]
     Left = 0
     Top = 280
     Width = 684
     Height = 195
     Align = alBottom
-    TabOrder = 2
-    object dbgCore: TToughDBGrid
-      Tag = 16384
+    TabOrder = 1
+    object pPreviousOrders: TPanel
+      Left = 1
+      Top = 80
+      Width = 682
+      Height = 114
+      Align = alBottom
+      BevelOuter = bvNone
+      TabOrder = 0
+      object gbPrevOrders: TGroupBox
+        Left = 0
+        Top = 0
+        Width = 480
+        Height = 114
+        Align = alLeft
+        Caption = ' '#1055#1088#1077#1076#1099#1076#1091#1097#1080#1077' '#1079#1072#1082#1072#1079#1099' '
+        Constraints.MinWidth = 480
+        TabOrder = 0
+        DesignSize = (
+          480
+          114)
+        object dbgHistory: TToughDBGrid
+          Left = 8
+          Top = 16
+          Width = 463
+          Height = 87
+          Anchors = [akLeft, akTop, akRight]
+          AutoFitColWidths = True
+          DataSource = dsPreviosOrders
+          Flat = True
+          FooterColor = clWindow
+          FooterFont.Charset = DEFAULT_CHARSET
+          FooterFont.Color = clWindowText
+          FooterFont.Height = -11
+          FooterFont.Name = 'MS Sans Serif'
+          FooterFont.Style = []
+          Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
+          OptionsEh = [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
+          ReadOnly = True
+          TabOrder = 0
+          TitleFont.Charset = DEFAULT_CHARSET
+          TitleFont.Color = clWindowText
+          TitleFont.Height = -11
+          TitleFont.Name = 'MS Sans Serif'
+          TitleFont.Style = []
+          SearchPosition = spBottom
+          Columns = <
+            item
+              EditButtons = <>
+              FieldName = 'PriceName'
+              Footers = <>
+              Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
+              Width = 110
+            end
+            item
+              EditButtons = <>
+              FieldName = 'SynonymFirm'
+              Footers = <>
+              Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
+              Width = 102
+            end
+            item
+              EditButtons = <>
+              FieldName = 'Period'
+              Footers = <>
+              Title.Caption = #1057#1088#1086#1082' '#1075#1086#1076#1085'.'
+            end
+            item
+              EditButtons = <>
+              FieldName = 'OrderCount'
+              Footers = <>
+              Title.Caption = #1047#1072#1082#1072#1079
+              Width = 38
+            end
+            item
+              EditButtons = <>
+              FieldName = 'Price'
+              Footers = <>
+              Title.Caption = #1062#1077#1085#1072
+              Width = 49
+            end
+            item
+              Alignment = taCenter
+              DisplayFormat = 'dd.mm.yyyy'
+              EditButtons = <>
+              FieldName = 'OrderDate'
+              Footers = <>
+              Title.Caption = #1044#1072#1090#1072
+              Width = 68
+            end>
+        end
+      end
+      object gbFirmInfo: TGroupBox
+        Left = 480
+        Top = 0
+        Width = 202
+        Height = 114
+        Align = alClient
+        Caption = ' '#1048#1085#1092#1086#1088#1084#1072#1094#1080#1103' '#1086' '#1087#1086#1089#1090#1072#1074#1097#1080#1082#1077' '
+        TabOrder = 1
+        DesignSize = (
+          202
+          114)
+        object lblSupportPhone: TLabel
+          Left = 6
+          Top = 16
+          Width = 61
+          Height = 13
+          Caption = #1058#1077#1083#1077#1092#1086#1085' :'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object dbtSupportPhone: TDBText
+          Left = 73
+          Top = 16
+          Width = 99
+          Height = 13
+          AutoSize = True
+          DataField = 'SupportPhone'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object dbmContactInfo: TDBMemo
+          Left = 6
+          Top = 32
+          Width = 215
+          Height = 93
+          Anchors = [akLeft, akTop, akRight, akBottom]
+          BevelInner = bvNone
+          BevelOuter = bvNone
+          BorderStyle = bsNone
+          Color = clBtnFace
+          DataField = 'OperativeInfo'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ReadOnly = True
+          ScrollBars = ssVertical
+          TabOrder = 0
+        end
+      end
+    end
+    object pCore: TPanel
       Left = 1
       Top = 1
       Width = 682
-      Height = 193
+      Height = 79
+      Align = alClient
+      BevelOuter = bvNone
+      TabOrder = 1
+      object dbgCore: TToughDBGrid
+        Tag = 16384
+        Left = 0
+        Top = 0
+        Width = 682
+        Height = 79
+        Align = alClient
+        AutoFitColWidths = True
+        Flat = True
+        FooterColor = clWindow
+        FooterFont.Charset = DEFAULT_CHARSET
+        FooterFont.Color = clWindowText
+        FooterFont.Height = -11
+        FooterFont.Name = 'MS Sans Serif'
+        FooterFont.Style = []
+        Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
+        OptionsEh = [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
+        ParentShowHint = False
+        ReadOnly = True
+        ShowHint = False
+        TabOrder = 0
+        TitleFont.Charset = DEFAULT_CHARSET
+        TitleFont.Color = clWindowText
+        TitleFont.Height = -11
+        TitleFont.Name = 'MS Sans Serif'
+        TitleFont.Style = []
+        OnEnter = dbgCoreEnter
+        OnExit = dbgCoreExit
+        OnGetCellParams = dbgCoreGetCellParams
+        OnKeyDown = dbgCoreKeyDown
+        InputField = 'OrderCount'
+        SearchPosition = spTop
+      end
+    end
+  end
+  object pGrid: TPanel [2]
+    Left = 0
+    Top = 41
+    Width = 684
+    Height = 239
+    Align = alClient
+    BevelOuter = bvNone
+    TabOrder = 2
+    object dbgAwaitedProducts: TToughDBGrid
+      Tag = 16
+      Left = 0
+      Top = 0
+      Width = 684
+      Height = 239
       Align = alClient
       AutoFitColWidths = True
+      DataSource = dsAwaitedProducts
       Flat = True
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
       FooterColor = clWindow
       FooterFont.Charset = DEFAULT_CHARSET
       FooterFont.Color = clWindowText
       FooterFont.Height = -11
       FooterFont.Name = 'MS Sans Serif'
       FooterFont.Style = []
-      Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
-      OptionsEh = [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
-      ParentShowHint = False
+      Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgRowSelect, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+      OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghRowHighlight]
+      ParentFont = False
       ReadOnly = True
-      ShowHint = False
       TabOrder = 0
       TitleFont.Charset = DEFAULT_CHARSET
       TitleFont.Color = clWindowText
       TitleFont.Height = -11
       TitleFont.Name = 'MS Sans Serif'
       TitleFont.Style = []
-      OnEnter = dbgCoreEnter
-      OnExit = dbgCoreExit
-      OnGetCellParams = dbgCoreGetCellParams
-      OnKeyDown = dbgCoreKeyDown
-      InputField = 'OrderCount'
-      SearchPosition = spTop
+      OnEnter = dbgAwaitedProductsEnter
+      OnExit = dbgAwaitedProductsExit
+      OnGetCellParams = dbgAwaitedProductsGetCellParams
+      OnKeyDown = dbgAwaitedProductsKeyDown
+      SearchPosition = spBottom
+      Columns = <
+        item
+          EditButtons = <>
+          FieldName = 'CatalogName'
+          Footers = <>
+          Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077
+          Width = 459
+        end
+        item
+          EditButtons = <>
+          FieldName = 'ProducerName'
+          Footers = <>
+          Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
+          Width = 200
+        end>
     end
   end
   object adsAwaitedProducts: TMyQuery
@@ -136,7 +306,12 @@ inherited AwaitedProductsForm: TAwaitedProductsForm
       '  AwaitedProducts.ProducerId,'
       '  concat(catalogs.name, '#39' '#39', catalogs.form) as CatalogName,'
       '  ifnull(Producers.Name, '#39#1042#1089#1077' '#1087#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1080#39') as ProducerName,'
-      '  CATALOGS.CoreExists'
+      '  CATALOGS.CoreExists,'
+      '  CATALOGS.FullCode,'
+      '  CATALOGS.DescriptionId,'
+      '  catalogs.VitallyImportant as CatalogVitallyImportant,'
+      '  catalogs.MandatoryList as CatalogMandatoryList,'
+      '  Catalogs.MnnId'
       'from'
       '  AwaitedProducts'
       '  inner join CATALOGS on '
@@ -165,6 +340,21 @@ inherited AwaitedProductsForm: TAwaitedProductsForm
     end
     object adsAwaitedProductsCoreExists: TBooleanField
       FieldName = 'CoreExists'
+    end
+    object adsAwaitedProductsDescriptionId: TLargeintField
+      FieldName = 'DescriptionId'
+    end
+    object adsAwaitedProductsMnnId: TLargeintField
+      FieldName = 'MnnId'
+    end
+    object adsAwaitedProductsCatalogVitallyImportant: TBooleanField
+      FieldName = 'CatalogVitallyImportant'
+    end
+    object adsAwaitedProductsCatalogMandatoryList: TBooleanField
+      FieldName = 'CatalogMandatoryList'
+    end
+    object adsAwaitedProductsFullCode: TLargeintField
+      FieldName = 'FullCode'
     end
   end
   object dsAwaitedProducts: TDataSource
@@ -317,7 +507,9 @@ inherited AwaitedProductsForm: TAwaitedProductsForm
         '6475636572436f73742c'
       
         '2020202050726f6475636572732e4e616d652061732050726f64756365724e61' +
-        '6d65'
+        '6d652c'
+      '20202020526567696f6e616c446174612e537570706f727450686f6e652c20'
+      '20202020526567696f6e616c446174612e4f7065726174697665496e666f'
       '46524f4d'
       '2020202070726f6475637473'
       
@@ -366,6 +558,13 @@ inherited AwaitedProductsForm: TAwaitedProductsForm
       
         '202020204c454654204a4f494e20526567696f6e73204f4e20436f72652e5265' +
         '67696f6e436f64653d526567696f6e732e526567696f6e436f6465'
+      '202020206c656674206a6f696e20526567696f6e616c44617461206f6e20'
+      
+        '202020202020202020526567696f6e616c446174612e4669726d436f6465203d' +
+        '2050726f7669646572732e4669726d436f6465'
+      
+        '202020202020202020616e6420526567696f6e616c446174612e526567696f6e' +
+        '436f6465203d20526567696f6e732e526567696f6e436f6465'
       
         '202020204c454654204a4f494e2043757272656e744f726465724c6973747320' +
         '6f736263204f4e206f7362632e636c69656e746964203d203a636c69656e7469' +
@@ -558,7 +757,9 @@ inherited AwaitedProductsForm: TAwaitedProductsForm
         '6475636572436f73742c'
       
         '2020202050726f6475636572732e4e616d652061732050726f64756365724e61' +
-        '6d65'
+        '6d652c'
+      '20202020526567696f6e616c446174612e537570706f727450686f6e652c20'
+      '20202020526567696f6e616c446174612e4f7065726174697665496e666f'
       '46524f4d'
       '2020202070726f6475637473'
       
@@ -607,6 +808,13 @@ inherited AwaitedProductsForm: TAwaitedProductsForm
       
         '202020204c454654204a4f494e20526567696f6e73204f4e20436f72652e5265' +
         '67696f6e436f64653d526567696f6e732e526567696f6e436f6465'
+      '202020206c656674206a6f696e20526567696f6e616c44617461206f6e20'
+      
+        '202020202020202020526567696f6e616c446174612e4669726d436f6465203d' +
+        '2050726f7669646572732e4669726d436f6465'
+      
+        '202020202020202020616e6420526567696f6e616c446174612e526567696f6e' +
+        '436f6465203d20526567696f6e732e526567696f6e436f6465'
       
         '202020204c454654204a4f494e2043757272656e744f726465724c6973747320' +
         '6f736263204f4e206f7362632e636c69656e746964203d203a636c69656e7469' +
@@ -631,5 +839,117 @@ inherited AwaitedProductsForm: TAwaitedProductsForm
     OnTimer = tmrUpdateOffersTimer
     Left = 280
     Top = 69
+  end
+  object ActionList: TActionList
+    Left = 368
+    Top = 145
+  end
+  object dsPreviosOrders: TDataSource
+    DataSet = adsPreviosOrders
+    Left = 152
+    Top = 408
+  end
+  object adsPreviosOrders: TMyQuery
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      '#ORDERSSHOWBYFORM'
+      'SELECT '
+      '    products.catalogid as FullCode,'
+      '    osbc.Code,'
+      '    osbc.CodeCR,'
+      '    osbc.SynonymName,'
+      '    osbc.SynonymFirm,'
+      '    osbc.OrderCount,'
+      '    osbc.Price,'
+      '    PostedOrderHeads.SendDate as OrderDate,'
+      '    PostedOrderHeads.PriceName,'
+      '    PostedOrderHeads.RegionName,'
+      '    osbc.Await,'
+      '    osbc.Junk,'
+      '    osbc.Period'
+      'FROM'
+      '  PostedOrderLists osbc'
+      '  inner join products on products.productid = osbc.productid'
+      
+        '  INNER JOIN PostedOrderHeads ON osbc.OrderId=PostedOrderHeads.O' +
+        'rderId'
+      'WHERE'
+      '    (osbc.clientid = :ClientID)'
+      'and (osbc.OrderCount > 0)'
+      
+        'and (((:GroupByProducts = 0) and (products.catalogid = :FullCode' +
+        ')) or ((:GroupByProducts = 1) and (osbc.productid = :productid))' +
+        ')'
+      'And (PostedOrderHeads.Closed = 1)'
+      'ORDER BY PostedOrderHeads.SendDate DESC'
+      'limit 20')
+    Left = 208
+    Top = 389
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'ClientID'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'GroupByProducts'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'FULLCODE'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'GroupByProducts'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'productid'
+      end>
+    object adsPreviosOrdersFullCode: TLargeintField
+      FieldName = 'FullCode'
+    end
+    object adsPreviosOrdersCode: TStringField
+      FieldName = 'Code'
+      Size = 84
+    end
+    object adsPreviosOrdersCodeCR: TStringField
+      FieldName = 'CodeCR'
+      Size = 84
+    end
+    object adsPreviosOrdersSynonymName: TStringField
+      FieldName = 'SynonymName'
+      Size = 250
+    end
+    object adsPreviosOrdersSynonymFirm: TStringField
+      FieldName = 'SynonymFirm'
+      Size = 250
+    end
+    object adsPreviosOrdersOrderCount: TIntegerField
+      FieldName = 'OrderCount'
+    end
+    object adsPreviosOrdersOrderDate: TDateTimeField
+      FieldName = 'OrderDate'
+    end
+    object adsPreviosOrdersPriceName: TStringField
+      FieldName = 'PriceName'
+      Size = 70
+    end
+    object adsPreviosOrdersRegionName: TStringField
+      FieldName = 'RegionName'
+      Size = 25
+    end
+    object adsPreviosOrdersPrice: TFloatField
+      FieldName = 'Price'
+    end
+    object adsPreviosOrdersAwait: TBooleanField
+      FieldName = 'Await'
+    end
+    object adsPreviosOrdersJunk: TBooleanField
+      FieldName = 'Junk'
+    end
+    object adsPreviosOrdersPeriod: TStringField
+      FieldName = 'Period'
+    end
   end
 end
