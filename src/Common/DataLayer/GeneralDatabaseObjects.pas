@@ -851,7 +851,7 @@ begin
 +'    `JUNK`             tinyint(1) not null                 , ' 
 +'    `AWAIT`            tinyint(1) not null                 , ' 
 +'    `QUANTITY`         varchar(15) default null            , ' 
-+'    `NOTE`             varchar(50) default null            , ' 
++'    `NOTE`             varchar(100) default null            , ' 
 +'    `PERIOD`           varchar(20) default null            , ' 
 +'    `DOC`              varchar(20) default null            , ' 
 +'    `REGISTRYCOST`     decimal(8,2) default null           , ' 

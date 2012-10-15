@@ -8,6 +8,15 @@ create table analitf.awaitedproducts
     key `IDX_awaitedproducts_ProducerId` (`ProducerId`)
 ) ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
 
+alter table analitf.core
+  modify column `Note` varchar(100) default null;
+
+alter table analitf.currentorderlists
+  modify column `Note` varchar(100) default null;
+
+alter table analitf.postedorderlists
+  modify column `Note` varchar(100) default null;
+
 update analitf.globalparams
 set
   Value = "90"
