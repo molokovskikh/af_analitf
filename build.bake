@@ -190,7 +190,7 @@ Task @DeployToFolders:
 
 Task @TestDeployToFolders, [@ReadVersionInfo, @CheckPrevVersion, @CreateReleaseFolder, @DeployToFolders]
 
-Task @Deploy, [@ReadVersionInfo, @CheckPrevVersion, @CreateReleaseFolder, @DeployToFolders]:
+Task @Deploy, [@BuildAndProtectRelease, @ReadVersionInfo, @CheckPrevVersion, @CreateReleaseFolder, @DeployToFolders]:
 	print "Deploy упакованного релизного приложения завершен"
 
 def UpdateConfigFile(configFile as string, installFolder as string):
