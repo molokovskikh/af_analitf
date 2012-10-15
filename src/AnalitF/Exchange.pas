@@ -285,8 +285,6 @@ begin
     GetAddressController.UpdateAddresses(DM.MainConnection, DM.adtClientsCLIENTID.Value);
     GetSupplierController.UpdateSuppliers(DM.MainConnection);
 
-    GlobalExchangeParams.NewRejectsExists := False;
-    GlobalExchangeParams.AwaitedProductsExists := False;
     if not GlobalExchangeParams.AwaitedProductsExists
       and not GlobalExchangeParams.NewRejectsExists
     then

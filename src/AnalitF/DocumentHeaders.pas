@@ -86,6 +86,7 @@ type
     gbReject: TGroupBox;
     cbReject: TComboBox;
     adsDocumentHeadersLastRejectStatusTime: TDateTimeField;
+    adsDocumentHeadersRejectsCount: TLargeintField;
     procedure FormCreate(Sender: TObject);
     procedure dtpDateCloseUp(Sender: TObject);
     procedure dbgHeadersKeyDown(Sender: TObject; var Key: Word;
@@ -900,7 +901,9 @@ procedure TDocumentHeaderForm.dbgHeadersGetCellParams(Sender: TObject;
 begin
   if adsDocumentHeadersCreatedByUser.Value then
     Background := LegendHolder.Legends[lnCreatedByUserWaybill];
-  if not adsDocumentHeadersLastRejectStatusTime.IsNull and (adsDocumentHeadersLastRejectStatusTime.Value > FGS.LastRequestWithRejects) then
+  if (not adsDocumentHeadersLastRejectStatusTime.IsNull and (adsDocumentHeadersLastRejectStatusTime.Value > FGS.LastRequestWithRejects))
+    or (not adsDocumentHeadersRejectsCount.IsNull and (adsDocumentHeadersRejectsCount.Value > 0))
+  then
     Background := LegendHolder.Legends[lnModifiedWaybillByReject];
 end;
 

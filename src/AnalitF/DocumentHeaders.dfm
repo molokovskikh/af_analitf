@@ -296,6 +296,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       'p.FullName as ProviderName,'
       'sum(db.Amount) as TotalSumm,'
       'sum(db.RetailAmount) as TotalRetailSumm,'
+      'count(db.RejectId) as RejectsCount,'
       'max(db.LastRejectStatusTime) as LastRejectStatusTime'
       'from'
       '  DocumentHeaders dh,'
@@ -378,6 +379,9 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     object adsDocumentHeadersLastRejectStatusTime: TDateTimeField
       FieldName = 'LastRejectStatusTime'
     end
+    object adsDocumentHeadersRejectsCount: TLargeintField
+      FieldName = 'RejectsCount'
+    end
   end
   object dsDocumentHeaders: TDataSource
     DataSet = adsDocumentHeaders
@@ -416,6 +420,8 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       
         '73756d2864622e52657461696c416d6f756e742920617320546f74616c526574' +
         '61696c53756d6d2c'
+      '636f756e742864622e52656a65637449642920'
+      '202061732052656a65637473436f756e742c'
       '6d61782864622e4c61737452656a65637453746174757354696d652920617320'
       '20204c61737452656a65637453746174757354696d65'
       '66726f6d'

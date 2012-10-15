@@ -139,7 +139,7 @@ begin
   LegendInfos.Add(TLegendInfo.Create(lnCertificateNotFound, laBackground, clGray, 'Сертификат не был найден', 'Сертификат не был найден'));
   LegendInfos.Add(TLegendInfo.Create(lnSmartOrderOptimalCost, laBackground, RGB(172, 255, 151), 'Минимальная цена', 'Минимальная цена'));
   LegendInfos.Add(TLegendInfo.Create(lnSmartOrderAnotherError, laBackground, RGB(255, 128, 128), 'Не заказанные', 'Не заказанные'));
-  LegendInfos.Add(TLegendInfo.Create(lnModifiedWaybillByReject, laBackground, RGB(255, 128, 0), 'Измененная накладная', 'В накладной есть позиции с измененным статусом забраковки'));
+  LegendInfos.Add(TLegendInfo.Create(lnModifiedWaybillByReject, laBackground, RGB(255, 128, 0), 'Накладная с забраковкой', 'В накладной есть позиции с забраковкой и/или измененным статусом забраковки'));
   LegendInfos.Add(TLegendInfo.Create(lnRejectedWaybillPosition, laBackground, RGB(255, 128, 0), 'Новая забракованная позиция', 'Новая забракованная позиция'));
   LegendInfos.Add(TLegendInfo.Create(lnUnrejectedWaybillPosition, laBackground, RGB(128, 128, 0), 'Новая разбракованная позиция', 'Новая разбракованная позиция'));
   //lnRejectedColor = для этого цвета BGR = (158, 171, 167)
