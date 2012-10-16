@@ -33,6 +33,7 @@ type
   public
     Items: TStrings;
     LastError: Integer;
+    UseProcessMessages : Boolean;
     constructor Create(AOwner:TComponent); override;
     destructor Destroy; override;
     procedure Connect;
@@ -76,6 +77,7 @@ var
 constructor TARas.Create(AOwner:TComponent);
 begin
   inherited Create(AOwner);
+  UseProcessMessages := True; 
   FSync:=True;
   FUseEstablished:=True;
   Items:=TStringList.Create;
@@ -143,7 +145,8 @@ begin
   ConnectionWasEstablished:=True;
   if FSync then
     repeat //ожидаем окончания процесса соединения
-      Application.ProcessMessages;
+      if UseProcessMessages then
+        Application.ProcessMessages;
       if Disconnecting then Break;
       Sleep(0);
       RasCheck(FError);

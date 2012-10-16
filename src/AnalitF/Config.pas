@@ -1394,7 +1394,18 @@ var
   end;
 
 begin
-  state := CheckTCPConnection();
+  state := CheckTCPConnection(
+    dbcbRasConnect.Checked,
+    cbRas.Text,
+    dbeRasName.Field.AsString,
+    dbeRasPass.Field.AsString,
+    StrToIntDef(dbeRasSleep.Field.AsString, 5),
+    dbcbProxyConnect.Checked,
+    dbeProxyName.Field.AsString,
+    StrToIntDef(dbeProxyPort.Field.AsString, 3128),
+    dbeProxyUserName.Field.AsString,
+    dbeProxyPass.Field.AsString
+  );
   if state.Error then
     AProc.MessageBox(
         'В процессе теста соединения возникли ошибки.'#13#10
