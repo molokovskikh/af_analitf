@@ -616,7 +616,7 @@ begin
   { создаем экземпляр класса TSOAP для работы с SOAP через HTTP вручную }
   //Если запущены в DSP (для служебного пользования), то урл берется из настройки, если нет, то формируем автоматически
 {$ifdef DSP}
-  URL := DM.adtParams.FieldByName( 'HTTPHost').AsString + '/code.asmx';
+  URL := 'https://' + DM.adtParams.FieldByName( 'HTTPHost').AsString + '/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
 {$else}
   if (FindCmdLineSwitch('extd')) and
     (DM.adtParams.FieldByName( 'HTTPHost').AsString <> '')

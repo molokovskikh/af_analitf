@@ -2,6 +2,8 @@ unit BackupDatabaseObjects;
 
 interface
 
+{$I '..\AF.inc'}
+
 uses
   SysUtils, Classes, Contnrs, StrUtils,
   DatabaseObjects;
@@ -526,7 +528,11 @@ begin
 +'  `SupplierCost` decimal(18,4) default null, '
 +'  `Quantity` int(10) DEFAULT NULL, '
 +'  `VitallyImportant` tinyint(1) unsigned default null, '
+{$ifndef USENEWMYSQLTYPES}
++'  `NDS` int(10) DEFAULT NULL, '
+{$else}
 +'  `NDS` int(10) unsigned DEFAULT NULL, '
+{$endif}
 +'  `SerialNumber` varchar(50) default null, '
 +'  `RetailMarkup` decimal(12,6) default null, '
 +'  `ManualCorrection` tinyint(1) unsigned not null default ''0'', '
