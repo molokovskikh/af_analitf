@@ -447,6 +447,7 @@ object CoreFirmForm: TCoreFirmForm
       Caption = #1042' '#1082#1072#1090#1072#1083#1086#1075' (F2)'
       ShortCut = 113
       OnExecute = actFlipCoreExecute
+      OnUpdate = actFlipCoreUpdate
     end
   end
   object tmrSearch: TTimer

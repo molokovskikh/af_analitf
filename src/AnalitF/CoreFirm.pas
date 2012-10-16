@@ -158,6 +158,7 @@ type
       EditMode: Boolean; Params: TColCellParamsEh);
     procedure adsCoreAfterScroll(DataSet: TDataSet);
     procedure cbProducersCloseUp(Sender: TObject);
+    procedure actFlipCoreUpdate(Sender: TObject);
   private
     PriceCode, ClientId: Integer;
     RegionCode : Int64;
@@ -276,7 +277,6 @@ begin
   adsSupplierPromotions.ParamByName('SupplierId').Value := supplierId;
 
   FOpenWithSearch := OpenWithSearch;
-  actFlipCore.Visible := not FOpenWithSearch;
   if adsProducers.Active then
     adsProducers.Close;
   adsProducers.ParamByName( 'PriceCode').Value:=PriceCode;
@@ -1039,6 +1039,11 @@ end;
 procedure TCoreFirmForm.UpdateGridOnLegend(Sender: TObject);
 begin
   dbgCore.Invalidate;
+end;
+
+procedure TCoreFirmForm.actFlipCoreUpdate(Sender: TObject);
+begin
+  actFlipCore.Visible := not (PrevForm is TOrdersForm);
 end;
 
 end.
