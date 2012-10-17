@@ -20,7 +20,7 @@ uses
   U_CurrentOrderItem,
   DayOfWeekHelper,
   StrHlder,
-  U_LegendHolder;
+  U_LegendHolder, ActnList;
 
 const
   postedOrdersLimit = 1000;
@@ -92,6 +92,8 @@ type
     adsOrdersHFormRealClientId: TLargeintField;
     strhPostedBegin: TStrHolder;
     strhPostedEnd: TStrHolder;
+    ActionList: TActionList;
+    actMoveToPrice: TAction;
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);
@@ -119,8 +121,9 @@ type
     procedure btnUnFrozenClick(Sender: TObject);
     procedure sbMoveToClientClick(Sender: TObject);
     procedure tmrFillReportTimer(Sender: TObject);
-    procedure sbMoveToPriceClick(Sender: TObject);
     procedure dbMemoEnter(Sender: TObject);
+    procedure actMoveToPriceExecute(Sender: TObject);
+    procedure actMoveToPriceUpdate(Sender: TObject);
   private
     Strings: TStrings;
     SelectedPrices : TStringList;
@@ -155,8 +158,9 @@ type
     frameFilterAddressesSend : TframeFilterAddresses;
     procedure SavePeriodToGlobals;
     function GetPostedCriteria() : String;
-    procedure CheckPostedOrdersCountToShow(postedCriteria : String); 
+    procedure CheckPostedOrdersCountToShow(postedCriteria : String);
     procedure UpdateGridOnLegend(Sender : TObject);
+    procedure InternalMoveToPriceAction(Sender: TObject);
   public
     frameOrderHeadLegend : TframeOrderHeadLegend;
     procedure SetParameters;
@@ -1308,31 +1312,6 @@ begin
   end;
 end;
 
-procedure TOrdersHForm.sbMoveToPriceClick(Sender: TObject);
-var
-  Grid : TToughDBGrid;
-begin
-  if TabControl.TabIndex = 0 then
-    Grid := dbgCurrentOrders
-  else
-    Grid := dbgSendedOrders;
-
-  Grid.SetFocus;
-  if not adsOrdersHForm.IsEmpty then
-  begin
-    FillSelectedRows(Grid);
-
-    if FSelectedRows.Count > 1 then
-      AProc.MessageBox( 'Перемещать в прайс-лист можно только по одной заявке.', MB_ICONWARNING)
-    else
-      if adsOrdersHFormClientID.Value <> DM.adtClientsCLIENTID.Value then
-        AProc.MessageBox( 'Перемещать в прайс-лист можно только заявки текущего адреса заказа.', MB_ICONWARNING)
-      else
-        if FSelectedRows.Count = 1 then
-          OnDectinationPriceClick(sbMoveToPrice);
-  end;
-end;
-
 procedure TOrdersHForm.InternalMoveToAnotherPrice;
 var
   I : Integer;
@@ -1558,6 +1537,41 @@ begin
     dbgCurrentOrders.Invalidate
   else
     dbgSendedOrders.Invalidate;
+end;
+
+procedure TOrdersHForm.InternalMoveToPriceAction(Sender: TObject);
+var
+  Grid : TToughDBGrid;
+begin
+  if TabControl.TabIndex = 0 then
+    Grid := dbgCurrentOrders
+  else
+    Grid := dbgSendedOrders;
+
+  Grid.SetFocus;
+  if not adsOrdersHForm.IsEmpty then
+  begin
+    FillSelectedRows(Grid);
+
+    if FSelectedRows.Count > 1 then
+      AProc.MessageBox( 'Перемещать в прайс-лист можно только по одной заявке.', MB_ICONWARNING)
+    else
+      if adsOrdersHFormClientID.Value <> DM.adtClientsCLIENTID.Value then
+        AProc.MessageBox( 'Перемещать в прайс-лист можно только заявки текущего адреса заказа.', MB_ICONWARNING)
+      else
+        if FSelectedRows.Count = 1 then
+          OnDectinationPriceClick(sbMoveToPrice);
+  end;
+end;
+
+procedure TOrdersHForm.actMoveToPriceExecute(Sender: TObject);
+begin
+  InternalMoveToPriceAction(Sender);
+end;
+
+procedure TOrdersHForm.actMoveToPriceUpdate(Sender: TObject);
+begin
+  actMoveToPrice.Enabled := MainForm.actSendOrders.Enabled;
 end;
 
 initialization

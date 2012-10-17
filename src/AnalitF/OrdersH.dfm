@@ -46,13 +46,11 @@ inherited OrdersHForm: TOrdersHForm
           Top = 4
           Width = 150
           Height = 27
-          Hint = #1055#1077#1088#1077#1088#1072#1089#1087#1088#1077#1076#1077#1083#1080#1090#1100' '#1087#1086' '#1087#1086#1089#1090#1072#1074#1097#1080#1082#1072#1084' '#1080#1084#1077#1102#1097#1080#1084' '#1079#1072#1082#1072#1079#1099
-          Caption = #1055#1077#1088#1077#1088#1072#1089#1087#1088#1077#1076#1077#1083#1080#1090#1100
+          Action = actMoveToPrice
           Layout = blGlyphRight
           ParentShowHint = False
           ShowHint = True
           Spacing = 10
-          OnClick = sbMoveToPriceClick
         end
         object sbMoveToClient: TSpeedButton
           Left = 480
@@ -1777,5 +1775,15 @@ inherited OrdersHForm: TOrdersHForm
       
         '6f7264657220627920506f737465644f7264657248656164732e53656e644461' +
         '74652044455343')
+  end
+  object ActionList: TActionList
+    Left = 356
+    Top = 143
+    object actMoveToPrice: TAction
+      Caption = #1055#1077#1088#1077#1088#1072#1089#1087#1088#1077#1076#1077#1083#1080#1090#1100
+      Hint = #1055#1077#1088#1077#1088#1072#1089#1087#1088#1077#1076#1077#1083#1080#1090#1100' '#1087#1086' '#1087#1086#1089#1090#1072#1074#1097#1080#1082#1072#1084' '#1080#1084#1077#1102#1097#1080#1084' '#1079#1072#1082#1072#1079#1099
+      OnExecute = actMoveToPriceExecute
+      OnUpdate = actMoveToPriceUpdate
+    end
   end
 end
