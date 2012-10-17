@@ -285,7 +285,7 @@ begin
   dbgMailHeaders.Options := dbgMailHeaders.Options + [dgMultiSelect];  
 
   column := TDBGridHelper.AddColumn(dbgMailHeaders, 'LogTime', 'Дата', FCanvas.TextWidth('20110000 0000'));
-  column.MinWidth := FCanvas.TextWidth('2011.00.00') + 3;
+  column.MinWidth := FCanvas.TextWidth(' 2011.00.00 ') + 6;
   column := TDBGridHelper.AddColumn(dbgMailHeaders, 'IsImportantMail', 'Важное', FCanvas.TextWidth('Важное'), False);
   column.MinWidth := FCanvas.TextWidth('Важн') + 3;
   column := TDBGridHelper.AddColumn(dbgMailHeaders, 'SupplierName', 'Отправитель', FCanvas.TextWidth('Отправитель'));
