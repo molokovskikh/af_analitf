@@ -1216,8 +1216,8 @@ begin
   btnUnFrozen.Visible := False;
   btnMoveSend.Caption := 'Вернуть в текущие';
   btnMoveSend.Visible := True;
-  btnWayBillList.Visible := True;
-  ButtonLayout([btnDelete, btnMoveSend, btnWayBillList, sbMoveToPrice]);
+  btnWayBillList.Visible := False;
+  ButtonLayout([btnDelete, btnMoveSend, sbMoveToPrice]);
 end;
 
 procedure TOrdersHForm.ButtonLayout(buttons: array of TControl);
