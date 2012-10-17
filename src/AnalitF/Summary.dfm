@@ -999,7 +999,8 @@ inherited SummaryForm: TSummaryForm
       'and catalogs.fullcode = products.catalogid'
       'and PricesData.PriceCode = CurrentOrderHeads.PriceCode'
       'and Regions.RegionCode = CurrentOrderHeads.RegionCode'
-      'and Core.CoreId = :CoreId')
+      'and Core.CoreId = :CoreId'
+      'group by CurrentOrderLists.Id')
     Connection = DM.MyConnection
     SQL.Strings = (
       'SELECT '

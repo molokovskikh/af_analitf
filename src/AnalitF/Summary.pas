@@ -377,6 +377,12 @@ begin
     if (LastSymmaryType = 0) and FUseCorrectOrders and cbNeedCorrect.Checked then
       adsSummary.SQL.Text := adsSummary.SQL.Text
         + ' and ( CurrentOrderLists.DropReason is not null )';
+    if (LastSymmaryType = 0) then
+      adsSummary.SQL.Text := adsSummary.SQL.Text
+        + ' group by CurrentOrderLists.Id '
+    else
+      adsSummary.SQL.Text := adsSummary.SQL.Text
+        + ' group by PostedOrderLists.Id ';
     adsSummary.Open;
     SetOrderLabel;
   finally
@@ -442,7 +448,8 @@ begin
         adsSummary.Close;
       adsSummary.SQL.Text :=
         adsCurrentSummary.SQL.Text
-        + #13#10' and (CurrentOrderHeads.ClientId = ' + IntToStr(DM.adtClientsCLIENTID.Value) + ') '#13#10;
+        + #13#10' and (CurrentOrderHeads.ClientId = ' + IntToStr(DM.adtClientsCLIENTID.Value) + ') '#13#10
+        + ' group by CurrentOrderLists.Id ';
       adsSummary.Open;
       adsSummary.IndexFieldNames := 'SynonymName';
       DM.ShowFastReport( 'Summary.frf', adsSummary, APreview);

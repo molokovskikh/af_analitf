@@ -99,7 +99,6 @@ type
     gbComment: TGroupBox;
     dbmComment: TDBMemo;
     adsOrdersMarkup: TFloatField;
-    shPositionFullUpdate: TStrHolder;
     adsOrdersServerDocumentLineId: TLargeintField;
     adsOrdersRejectId: TLargeintField;
     adsOrdersServerDocumentId: TLargeintField;

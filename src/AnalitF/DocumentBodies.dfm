@@ -813,8 +813,9 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'catalogs.MaxMarkup as CatalogMaxMarkup,'
       'catalogs.MaxSupplierMarkup as CatalogMaxSupplierMarkup,'
       'dbodies.RejectId,'
-      '  if(dbodies.LastRejectStatusTime is null, 0, '
-      '  dbodies.LastRejectStatusTime > :LastRequestTime) '
+      'cast(if(dbodies.LastRejectStatusTime is null, 0, '
+      '  dbodies.LastRejectStatusTime > :LastRequestTime)'
+      ' as char(1))'
       '  as RejectStatus,'
       'dbodies.VitallyImportantByUser'
       'from'
@@ -865,8 +866,9 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'catalogs.MaxMarkup as CatalogMaxMarkup,'
       'catalogs.MaxSupplierMarkup as CatalogMaxSupplierMarkup,'
       'dbodies.RejectId,'
-      '  if(dbodies.LastRejectStatusTime is null, 0, '
-      '  dbodies.LastRejectStatusTime > :LastRequestTime) '
+      'cast(if(dbodies.LastRejectStatusTime is null, 0, '
+      '  dbodies.LastRejectStatusTime > :LastRequestTime)'
+      ' as char(1))'
       '  as RejectStatus,'
       'ol.ServerOrderListId,'
       'ol.OrderId,'
@@ -1017,7 +1019,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     object adsDocumentBodiesVitallyImportantByUser: TBooleanField
       FieldName = 'VitallyImportantByUser'
     end
-    object adsDocumentBodiesRejectStatus: TLargeintField
+    object adsDocumentBodiesRejectStatus: TStringField
       FieldName = 'RejectStatus'
     end
   end
@@ -1298,6 +1300,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'WHERE '
       '    (ol.OrderId = :OrderId)'
       'AND (OrderCount>0)'
+      'group by ol.Id'
       'ORDER BY SynonymName, SynonymFirm')
     RefreshOptions = [roAfterInsert, roAfterUpdate]
     KeyFields = 'Id'

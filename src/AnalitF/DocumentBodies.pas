@@ -175,7 +175,7 @@ type
     dbgOrder: TDBGridEh;
     adsDocumentHeadersProviderShortName: TStringField;
     cbSelect: TCheckBox;
-    adsDocumentBodiesRejectStatus: TLargeintField;
+    adsDocumentBodiesRejectStatus: TStringField;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
@@ -238,6 +238,9 @@ type
 {$ifdef DEBUG}
     sbMarkAsReject : TSpeedButton;
     sbMarkAsUnReject : TSpeedButton;
+    sbMarkAsOrder1 : TSpeedButton;
+    sbMarkAsOrder2 : TSpeedButton;
+    sbDeleteMarks : TSpeedButton;
 {$endif}
 
 
@@ -249,6 +252,8 @@ type
     FParams : TVitallyImportantMarkupsParams;
 
     FWaybillDataSetState : set of TDataSetState;
+
+    EtalonSQL : String;
 
     procedure SetParams;
     procedure PrepareGrid;
@@ -317,6 +322,10 @@ type
 {$ifdef DEBUG}
     procedure sbMarkAsRejectClick(Sender: TObject);
     procedure sbMarkAsUnRejectClick(Sender: TObject);
+    procedure sbMarkAsOrder1Click(Sender: TObject);
+    procedure sbMarkAsOrder2Click(Sender: TObject);
+    procedure sbDeleteMarksClick(Sender: TObject);
+    procedure markAsOrderBy(serverOrderListId : Int64);
 {$endif}
     procedure SetOrderByPosition;
     procedure SetOrderGrid;
@@ -362,7 +371,7 @@ begin
   adsInvoiceHeaders.ParamByName('DocumentId').Value := FDocumentId;
   adsInvoiceHeaders.Open;
   adsDocumentBodies.Close;
-  adsDocumentBodies.RestoreSQL;
+  adsDocumentBodies.SQL.Text := EtalonSQL;
   PrepareGrid;
   gbPrint.Visible := adsDocumentHeadersDocumentType.Value = 1;
   adsDocumentBodies.ParamByName('DocumentId').Value := FDocumentId;
@@ -485,6 +494,9 @@ begin
 {$ifdef DEBUG}
       sbMarkAsReject.Visible := False;
       sbMarkAsUnReject.Visible := False;
+      sbMarkAsOrder1.Visible := False;
+      sbMarkAsOrder2.Visible := False;
+      sbDeleteMarks.Visible := False;
 {$endif}
       legeng.Visible := True;
       FWaybillDataSetState := [dsEdit, dsInsert];
@@ -504,6 +516,9 @@ begin
 {$ifdef DEBUG}
       sbMarkAsReject.Visible := True;
       sbMarkAsUnReject.Visible := True;
+      sbMarkAsOrder1.Visible := True;
+      sbMarkAsOrder2.Visible := True;
+      sbDeleteMarks.Visible := True;
 {$endif}
       UpdateRequestCertificates;
       legeng.Visible := True;
@@ -680,6 +695,7 @@ procedure TDocumentBodiesForm.FormCreate(Sender: TObject);
 var
   calc : TField;
 begin
+  EtalonSQL := adsDocumentBodies.SQL.Text;
   FParams := TVitallyImportantMarkupsParams.Create(DM.MainConnection);
   NeedLog := FindCmdLineSwitch('extd');
   //Добавлем наценки
@@ -791,12 +807,12 @@ var
   maxSupplierMarkup : Currency;
 begin
   if not adsDocumentBodiesRejectId.IsNull then
-    if adsDocumentBodiesRejectStatus.Value > 0 then
+    if adsDocumentBodiesRejectStatus.Value = '1' then
       Background := LegendHolder.Legends[lnRejectedWaybillPosition]
     else
       Background := LegendHolder.Legends[lnRejectedColor]
   else
-    if adsDocumentBodiesRejectStatus.Value > 0 then
+    if adsDocumentBodiesRejectStatus.Value = '1' then
       Background := LegendHolder.Legends[lnUnrejectedWaybillPosition];
 
   if (retailMarkupField.Value < 0) then
@@ -896,7 +912,7 @@ begin
     LastSort := adsDocumentBodies.IndexFieldNames;
     adsDocumentBodies.IndexFieldNames := '';
     adsDocumentBodies.Close;
-    adsDocumentBodies.RestoreSQL;
+    adsDocumentBodies.SQL.Text := EtalonSQL;
     AddNDSFilter();
     adsDocumentBodies.Open;
     adsDocumentBodies.First;
@@ -1375,20 +1391,27 @@ end;
 procedure TDocumentBodiesForm.sbPrintInvoiceClick(Sender: TObject);
 var
   LastId : Int64;
+  LastSort : String;
 begin
   adsDocumentBodies.DisableControls;
   LastId := adsDocumentBodiesId.Value;
+  LastSort := adsDocumentBodies.IndexFieldNames;
+  adsDocumentBodies.IndexFieldNames := '';
   adsDocumentBodies.Close;
-  adsDocumentBodies.RestoreSQL;
-  adsDocumentBodies.SetOrderBy('NDS;Product');
+  adsDocumentBodies.SQL.Text := EtalonSQL;
+  adsDocumentBodies.SQL.Text := adsDocumentBodies.SQL.Text
+    + #13#10' group by dbodies.Id '
+    + #13#10' order by dbodies.NDS, dbodies.Product ';
   adsDocumentBodies.Open;
   try
     PrintInvoice();
   finally
     adsDocumentBodies.Close;
-    adsDocumentBodies.RestoreSQL;
+    adsDocumentBodies.SQL.Text := EtalonSQL;
     AddNDSFilter();
     adsDocumentBodies.Open;
+    if LastSort <> '' then
+      adsDocumentBodies.IndexFieldNames := LastSort;
     if not adsDocumentBodies.Locate('Id', LastId, []) then
       adsDocumentBodies.First;
     adsDocumentBodies.EnableControls;
@@ -1542,8 +1565,9 @@ begin
     adsDocumentBodies.DisableControls;
     LastId := adsDocumentBodiesId.Value;
     adsDocumentBodies.Close;
-    adsDocumentBodies.RestoreSQL;
-    adsDocumentBodies.AddWhere('Printed = 1');
+    adsDocumentBodies.SQL.Text := EtalonSQL;
+    adsDocumentBodies.SQL.Text := adsDocumentBodies.SQL.Text
+      + #13#10' and dbodies.Printed = 1 ';
     AddNDSFilter();
     adsDocumentBodies.Open;
     try
@@ -1572,7 +1596,7 @@ begin
       mdReport.LoadFromDataSet(adsDocumentBodies, 0, lmAppend);
     finally
       adsDocumentBodies.Close;
-      adsDocumentBodies.RestoreSQL;
+      adsDocumentBodies.SQL.Text := EtalonSQL;
       AddNDSFilter();
       adsDocumentBodies.Open;
       if not adsDocumentBodies.Locate('Id', LastId, []) then
@@ -2077,6 +2101,30 @@ begin
   sbMarkAsUnReject.Caption := 'Пометить как разбраковку';
   sbMarkAsUnReject.Width := Self.Canvas.TextWidth(sbMarkAsUnReject.Caption) + 20;
   sbMarkAsUnReject.OnClick := sbMarkAsUnRejectClick;
+
+  sbMarkAsOrder1 := TSpeedButton.Create(Self);
+  sbMarkAsOrder1.Parent := pButtons;
+  sbMarkAsOrder1.Top := 8;
+  sbMarkAsOrder1.Left := sbMarkAsUnReject.Left + sbMarkAsUnReject.Width + 10;
+  sbMarkAsOrder1.Caption := 'Сопоставить с 1';
+  sbMarkAsOrder1.Width := Self.Canvas.TextWidth(sbMarkAsOrder1.Caption) + 20;
+  sbMarkAsOrder1.OnClick := sbMarkAsOrder1Click;
+
+  sbMarkAsOrder2 := TSpeedButton.Create(Self);
+  sbMarkAsOrder2.Parent := pButtons;
+  sbMarkAsOrder2.Top := 8;
+  sbMarkAsOrder2.Left := sbMarkAsOrder1.Left + sbMarkAsOrder1.Width + 10;
+  sbMarkAsOrder2.Caption := 'Сопоставить с 2';
+  sbMarkAsOrder2.Width := Self.Canvas.TextWidth(sbMarkAsOrder2.Caption) + 20;
+  sbMarkAsOrder2.OnClick := sbMarkAsOrder2Click;
+
+  sbDeleteMarks := TSpeedButton.Create(Self);
+  sbDeleteMarks.Parent := pButtons;
+  sbDeleteMarks.Top := 8;
+  sbDeleteMarks.Left := sbMarkAsOrder2.Left + sbMarkAsOrder2.Width + 10;
+  sbDeleteMarks.Caption := 'Удалить сопоставления';
+  sbDeleteMarks.Width := Self.Canvas.TextWidth(sbDeleteMarks.Caption) + 20;
+  sbDeleteMarks.OnClick := sbDeleteMarksClick;
 {$endif}
 
   legeng := TframeBaseLegend.Create(Self);
@@ -2180,7 +2228,9 @@ var
 begin
   filter := GetNDSFilter();
   if Length(filter) > 0 then
-    adsDocumentBodies.AddWhere(filter);
+    adsDocumentBodies.SQL.Text := adsDocumentBodies.SQL.Text  + ' and ' + filter ;
+  if not adsDocumentHeadersCreatedByUser.Value then
+    adsDocumentBodies.SQL.Text := adsDocumentBodies.SQL.Text  + #13#10' group by dbodies.Id ';
 end;
 
 procedure TDocumentBodiesForm.ForceRecalcDocument(DocumentId: Int64);
@@ -2610,6 +2660,49 @@ end;
 procedure TDocumentBodiesForm.sbMarkAsUnRejectClick(Sender: TObject);
 begin
   DM.MainConnection.ExecSQL('update documentBodies set LastRejectStatusTime = now() where Id = ' + adsDocumentBodiesId.AsString, []);
+end;
+
+procedure TDocumentBodiesForm.sbDeleteMarksClick(Sender: TObject);
+var
+  deleteCount : Integer;
+begin
+  WriteExchangeLog('sbDeleteMarksClick', 'Удаляем сопоставление для adsDocumentBodiesServerId=' + adsDocumentBodiesServerId.AsString);
+  deleteCount := DBProc.UpdateValue(DM.MainConnection,
+    'delete from waybillOrders where waybillOrders.ServerDocumentLineId = :ServerId',
+    ['ServerId'],
+    [adsDocumentBodiesServerId.Value]);
+  ShowMessageFmt('Удалено %d сопоставлений', [deleteCount]);
+end;
+
+procedure TDocumentBodiesForm.sbMarkAsOrder1Click(Sender: TObject);
+var
+  orderListId : Variant;
+begin
+  orderListId := DM.QueryValue('select ServerOrderListId from postedorderlists limit 1', [], []);
+  if not VarIsNull(orderListId) then
+    markAsOrderBy(orderListId);
+end;
+
+procedure TDocumentBodiesForm.sbMarkAsOrder2Click(Sender: TObject);
+var
+  orderListId : Variant;
+begin
+  orderListId := DM.QueryValue('select ServerOrderListId from postedorderlists limit 2, 1', [], []);
+  if not VarIsNull(orderListId) then
+    markAsOrderBy(orderListId);
+end;
+
+procedure TDocumentBodiesForm.markAsOrderBy(serverOrderListId: Int64);
+var
+  insertCount : Integer;
+begin
+  WriteExchangeLog('markAsOrderBy', 'Добавляем сопоставление для adsDocumentBodiesServerId=' + adsDocumentBodiesServerId.AsString
+    + '  ServerOrderListId=' + IntToStr(serverOrderListId));
+  insertCount := DBProc.UpdateValue(DM.MainConnection,
+    'insert into waybillOrders (ServerDocumentLineId, ServerOrderListId) values (:ServerDocumentLineId, :ServerOrderListId)',
+    ['ServerDocumentLineId', 'ServerOrderListId'],
+    [adsDocumentBodiesServerId.Value, serverOrderListId]);
+  ShowMessageFmt('Вставлено %d сопоставлений', [insertCount]);
 end;
 {$endif}
 
