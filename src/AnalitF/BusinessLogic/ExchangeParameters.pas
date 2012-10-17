@@ -27,6 +27,7 @@ type
     NewRejectsExists : Boolean;
     LastRequestWithRejects : TDateTime;
     AwaitedProductsExists : Boolean;
+    GotoAddressIdByRejects : Int64;
 
     constructor Create();
     destructor Destroy; override;
@@ -53,6 +54,7 @@ begin
   NewRejectsExists := False;
   LastRequestWithRejects := Now();
   AwaitedProductsExists := False;
+  GotoAddressIdByRejects := 0;
 end;
 
 destructor TExchangeParams.Destroy;

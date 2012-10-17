@@ -327,6 +327,7 @@ public
   procedure UpdateNews;
   procedure UpdateTechContact;
   function GetInforoomLogoFile() : String;
+  procedure ChangeAddressId(byAddressId : Int64);
 end;
 
 var
@@ -2261,6 +2262,20 @@ procedure TMainForm.actAwaitedProductsExecute(Sender: TObject);
 begin
   DM.InsertUserActionLog(uaShowAwaitedProducts);
   ShowAwaitedProducts;
+end;
+
+procedure TMainForm.ChangeAddressId(byAddressId: Int64);
+var
+  menuItem : TMenuItem;
+  I : Integer;
+begin
+  if byAddressId <> DM.adtClientsCLIENTID.Value then begin
+    for I := 0 to pmClients.Items.Count-1 do
+      if pmClients.Items[i].Tag = byAddressId then begin
+        OnSelectClientClick(pmClients.Items[i]);
+        Break;
+      end;
+  end;
 end;
 
 initialization

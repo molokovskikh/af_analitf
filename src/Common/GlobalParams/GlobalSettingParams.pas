@@ -37,6 +37,7 @@ type
     class function GetConfirmDeleteOldWaybills(Connection : TCustomMyConnection) : Boolean;
     class function GetWaybillsHistoryDayCount(Connection : TCustomMyConnection) : Integer;
     class procedure SaveLastRequestWithRejects(Connection : TCustomMyConnection; lastRequestWithRejects : TDateTime);
+    class function GetNewRejectsDayCount(Connection : TCustomMyConnection) : Integer;
   end;
 
 implementation
@@ -46,6 +47,12 @@ implementation
 class function TGlobalSettingParams.GetConfirmDeleteOldWaybills(Connection : TCustomMyConnection): Boolean;
 begin
   Result := TGlobalParamsHelper.GetParamDef(Connection, 'ConfirmDeleteOldWaybills', True);
+end;
+
+class function TGlobalSettingParams.GetNewRejectsDayCount(
+  Connection: TCustomMyConnection): Integer;
+begin
+  Result := TGlobalParamsHelper.GetParamDef(Connection, 'NewRejectsDayCount', 90);
 end;
 
 class function TGlobalSettingParams.GetWaybillsHistoryDayCount(Connection : TCustomMyConnection): Integer;
@@ -73,7 +80,7 @@ begin
   ShowRejectsReason := GetParamDef('ShowRejectsReason', False);
   lastRequestWithRejectsVariant := GetParamDef('LastRequestWithRejects', EncodeDate(2012, 09, 01));
   LastRequestWithRejects := VarToDateTime(lastRequestWithRejectsVariant);
-  NewRejectsDayCount := GetParamDef('NewRejectsDayCount', 90);
+  NewRejectsDayCount := GetNewRejectsDayCount(FConnection);
 end;
 
 class procedure TGlobalSettingParams.SaveLastRequestWithRejects(

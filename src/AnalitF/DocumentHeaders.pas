@@ -139,7 +139,7 @@ type
 
   procedure ShowDocumentHeaders;
 
-  procedure ShowDocumentHeadersByNewRejects;
+  procedure ShowDocumentHeadersByNewRejects(byAddressId : Int64);
 
 
 implementation
@@ -166,10 +166,11 @@ begin
   document.ShowForm;
 end;
 
-procedure ShowDocumentHeadersByNewRejects;
+procedure ShowDocumentHeadersByNewRejects(byAddressId : Int64);
 var
   document : TDocumentHeaderForm;
 begin
+  MainForm.ChangeAddressId(byAddressId);
   document := TDocumentHeaderForm(MainForm.ShowChildForm( TDocumentHeaderForm ));
   document.PrepareBeforeNewRejects;
   document.ShowForm;

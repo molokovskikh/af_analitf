@@ -404,13 +404,13 @@ begin
          and GlobalExchangeParams.ImportDocs
       then begin
         if GlobalExchangeParams.NewRejectsExists and ShowNewRejects() then
-          ShowDocumentHeadersByNewRejects
+          ShowDocumentHeadersByNewRejects(GlobalExchangeParams.GotoAddressIdByRejects)
         else
           ShowDocumentHeaders;
       end;
 
   if Result and needShowRejectsWaybills then
-    ShowDocumentHeadersByNewRejects;
+    ShowDocumentHeadersByNewRejects(GlobalExchangeParams.GotoAddressIdByRejects);
 
   if Result and needShowAwaitedProducts then
     ShowAwaitedProducts;

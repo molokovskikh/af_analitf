@@ -216,6 +216,8 @@ private
 
   procedure DowloadAppFiles();
   procedure ProcessDownloadAppFile(downloadFile : TDownloadAppFile);
+
+  procedure CalculateBestAddressIdByRejects();
 protected
   procedure Execute; override;
 public
@@ -455,8 +457,7 @@ begin
       end;
 
       if (ExchangeParams.NewRejectsExists) then
-        TGlobalSettingParams.SaveLastRequestWithRejects(DM.MainConnection,
-          ExchangeParams.LastRequestWithRejects);
+        CalculateBestAddressIdByRejects();
 
       ImportComplete := True;
 
@@ -4883,6 +4884,38 @@ begin
 
   if not VarIsNull(countAwaitedProducts) and (countAwaitedProducts > 0) then
     ExchangeParams.AwaitedProductsExists := True;
+end;
+
+procedure TExchangeThread.CalculateBestAddressIdByRejects;
+var
+  bestAddressId : Variant;
+  newRejectsDayCount : Integer;
+  startDate : TDateTime;
+begin
+  newRejectsDayCount := TGlobalSettingParams.GetNewRejectsDayCount(DM.MainConnection);
+  startDate := StartOfTheDay( IncDay(Date(), -newRejectsDayCount));
+
+  bestAddressId := DM.QueryValue(
+    ' select c.ClientId, count(dbodies.RejectId) as RejectCount, count(dbodies.LastRejectStatusTime) as ChangesCount '
+    + ' from '
+    + ' DocumentHeaders dh '
+    + ' inner join DocumentBodies dbodies on dh.ServerId = dbodies.ServerDocumentId '
+    + ' inner join Clients c on c.ClientId = dh.ClientId '
+    + ' where '
+    + '   (dh.WriteTime > :StartDate) '
+    + '   and (dbodies.LastRejectStatusTime > :LastRequestWithRejects) '
+    + ' group by c.ClientId '
+    + ' order by 2 desc, 3 desc ',
+    ['StartDate', 'LastRequestWithRejects'],
+    [startDate, ExchangeParams.LastRequestWithRejects]);
+
+  if not VarIsNull(bestAddressId) then begin
+    ExchangeParams.GotoAddressIdByRejects := bestAddressId;
+    TGlobalSettingParams.SaveLastRequestWithRejects(DM.MainConnection,
+      ExchangeParams.LastRequestWithRejects);
+  end
+  else
+    ExchangeParams.NewRejectsExists := False;
 end;
 
 initialization
