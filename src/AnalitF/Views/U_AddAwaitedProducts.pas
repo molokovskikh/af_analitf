@@ -26,6 +26,7 @@ type
     procedure cbCatalogsKeyPress(Sender: TObject; var Key: Char);
     procedure tmrUpdateProducersTimer(Sender: TObject);
     procedure cbProducersKeyPress(Sender: TObject; var Key: Char);
+    procedure cbCatalogsCloseUp(Sender: TObject);
   private
     { Private declarations }
     function CheckExistsAwaitedProduct() : String;
@@ -109,7 +110,7 @@ end;
 procedure TAddAwaitedProducts.cbCatalogsKeyPress(Sender: TObject;
   var Key: Char);
 begin
-  if (Key > #32) and (Length(cbCatalogs.Text) > 2) then begin
+  if (Key > #32) and (Length(cbCatalogs.Text) > 1) then begin
     tmrUpdateCatalog.Enabled := False;
     tmrUpdateCatalog.Enabled := True;
   end;
@@ -143,7 +144,7 @@ end;
 procedure TAddAwaitedProducts.cbProducersKeyPress(Sender: TObject;
   var Key: Char);
 begin
-  if (Key > #32) and (Length(cbCatalogs.Text) > 2) then begin
+  if (Key > #32) and (Length(cbCatalogs.Text) > 1) then begin
     tmrUpdateProducers.Enabled := False;
     tmrUpdateProducers.Enabled := True;
   end;
@@ -182,6 +183,11 @@ begin
         Result := 'Выбранная связка наименование и производитель не может быть добавлена, т.к. в списке ожидаемых позиций существует наименование без указания производителя'
     end;
   end;
+end;
+
+procedure TAddAwaitedProducts.cbCatalogsCloseUp(Sender: TObject);
+begin
+  btnOk.SetFocus;
 end;
 
 end.

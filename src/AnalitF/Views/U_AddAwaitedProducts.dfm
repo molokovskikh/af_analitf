@@ -36,6 +36,7 @@ inherited AddAwaitedProducts: TAddAwaitedProducts
       AutoDropDown = True
       ItemHeight = 13
       TabOrder = 0
+      OnCloseUp = cbCatalogsCloseUp
       OnKeyPress = cbCatalogsKeyPress
     end
     object cbProducers: TComboBox
@@ -48,6 +49,7 @@ inherited AddAwaitedProducts: TAddAwaitedProducts
       ItemIndex = 0
       TabOrder = 1
       Text = #1042#1089#1077' '#1087#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1080
+      OnCloseUp = cbCatalogsCloseUp
       OnKeyPress = cbProducersKeyPress
       Items.Strings = (
         #1042#1089#1077' '#1087#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1080)
