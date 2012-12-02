@@ -1234,7 +1234,7 @@ begin
 
     if FNeedUpdateByCheckHashes then begin
       if not RunExchange([ eaGetPrice]) then
-        LogExitError('Не прошла проверка на подлинность компонент.', Integer(ecNotChechHashes), False);
+        LogExitError('Не прошла проверка на подлинность компонентов.', Integer(ecNotChechHashes), False);
     end;
 
     { Запуск с ключем -e (Получение данных и выход)}
@@ -1362,7 +1362,7 @@ begin
 
   FNeedUpdateByCheckHashes := not CheckCriticalLibrary or DownloadAppFilesHelper.ProcessCheckDownload();
   if FNeedUpdateByCheckHashes then
-    AProc.MessageBox( 'Ошибка проверки подлинности компонент программы. Необходимо выполнить обновление данных.',
+    AProc.MessageBox( 'Ошибка проверки подлинности компонентов программы. Необходимо выполнить обновление данных.',
       MB_ICONERROR or MB_OK);
 end;
 
