@@ -94,7 +94,7 @@ inherited AddAwaitedProducts: TAddAwaitedProducts
   end
   object tmrUpdateCatalog: TTimer
     Enabled = False
-    Interval = 750
+    Interval = 1300
     OnTimer = tmrUpdateCatalogTimer
     Left = 200
     Top = 128
@@ -120,7 +120,7 @@ inherited AddAwaitedProducts: TAddAwaitedProducts
   end
   object tmrUpdateProducers: TTimer
     Enabled = False
-    Interval = 750
+    Interval = 1300
     OnTimer = tmrUpdateProducersTimer
     Left = 240
     Top = 128

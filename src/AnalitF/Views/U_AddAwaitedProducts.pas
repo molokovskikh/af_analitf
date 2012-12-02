@@ -60,7 +60,10 @@ begin
 end;
 
 procedure TAddAwaitedProducts.tmrUpdateCatalogTimer(Sender: TObject);
+var
+  findText : String;
 begin
+  findText := cbCatalogs.Text;
   tmrUpdateCatalog.Enabled := False;
   adsCatalogs.Close;
   adsCatalogs.ParamByName('LikeParam').Value := '%' + cbCatalogs.Text + '%';
@@ -70,6 +73,7 @@ begin
     cbCatalogs.Items.Add(adsCatalogs.FieldByName('CatalogName').AsString);
     adsCatalogs.Next;
   end;
+  cbCatalogs.Text := findText;
 end;
 
 procedure TAddAwaitedProducts.FormCloseQuery(Sender: TObject;
