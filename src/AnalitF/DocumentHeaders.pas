@@ -26,6 +26,8 @@ uses
 
 type
   TExportDocRow = class
+   private
+    function ConvertToVariant(prefix : String; value : Double) : Variant;
    public
     CurrentFirmCode : Integer;
     CurrentYearMonth : String;
@@ -391,6 +393,27 @@ var
 
   exportDocRow : TExportDocRow;
 begin
+{
+¬ Microsoft Excel вплоть до 2003 версии включительно, использовалс€ свой собственный бинарный формат файлов (BIFF)
+в качестве основного.[3] Excel 2007 использует Microsoft Office Open XML в качестве своего основного формата.
+Ќесмотр€ на то, что Excel 2007 поддерживает и направлен на использование новых XML-форматов в качестве основных,
+он по-прежнему совместим с традиционными бинарными форматами.  роме того, большинство версий Microsoft Excel
+могут читать CSV, DBF, SYLK, DIF и другие форматы.
+
+
+Ќативный компонент дл€ формировани€ файлов Excel в формате Open XML
+http://avemey.com/zexmlss/index.php?lang=en
+http://avemey.com/download/zexmlss_0_0_5_src.zip
+
+zexmlss can create and load excel 2002/2003 XML (SpreadsheetML / XML Spreadsheet), OpenDocument Format (ODS),
+Office Open XML (xlsx) files without installed MS Excell or OpenOffice calc.
+Works in Lazarus (tested with Lazarus 0.9.30.2 and FPC 2.4.4 under Linux and Windows XP),
+in Delphi 7, Borland Developer Studio 2005, BDS 2006, CodeGear Delphi 2007, CodeGear RAD Studio 2009 and 2010,
+Delphi XE and Delphi XE2, in C++ Builder 6.
+License: zlib License
+Last version: 0.0.5 2012.08.12 (beta).
+}
+
   if DM.adsQueryValue.Active then
     DM.adsQueryValue.Close;
 
@@ -499,18 +522,18 @@ IfThen(supplierFilter <> '', ' and ' + supplierFilter + ' ') +
           ItogoTotalMarkup := RoundTo(ItogoTotalRetailSumm - ItogoTotalSumm, -2);
           ItogoTotalMarkupPercent := RoundTo((ItogoTotalRetailSumm/ItogoTotalSumm - 1) *100, -2);
         end;
-        exportData.WriteRow([
+        exportData.WriteRowVar([
           '»того',
           '',
           '',
-          FloatToStr(RoundTo(ItogoTotalSumm - ItogoTotalNDSSumm, -2)),
-          FloatToStr(RoundTo(ItogoTotalSumm, -2)),
-          FloatToStr(RoundTo(ItogoTotalRetailSumm, -2)),
+          RoundTo(ItogoTotalSumm - ItogoTotalNDSSumm, -2),
+          RoundTo(ItogoTotalSumm, -2),
+          RoundTo(ItogoTotalRetailSumm, -2),
           IfThen(abs(ItogoTotalMarkup) > 0.001,
-            FloatToStr(ItogoTotalMarkup)),
+            ItogoTotalMarkup),
           IfThen(abs(ItogoTotalMarkupPercent) > 0.001,
-            FloatToStr(ItogoTotalMarkupPercent)),
-          FloatToStr(RoundTo(ItogoTotalNDSSumm, -2))]);
+            ItogoTotalMarkupPercent),
+          RoundTo(ItogoTotalNDSSumm, -2)]);
       finally
         exportData.Free;
       end;
@@ -744,6 +767,15 @@ end;
 
 { TExportDocRow }
 
+function TExportDocRow.ConvertToVariant(prefix: String;
+  value: Double): Variant;
+begin
+  if Length(prefix) > 0 then
+    Result := prefix + FloatToStr(value)
+  else
+    Result := value;
+end;
+
 constructor TExportDocRow.Create;
 begin
   CurrentFirmCode := 0;
@@ -762,18 +794,18 @@ begin
     AllTotalMarkup := RoundTo(AllTotalRetailSumm - AllTotalSumm, -2);
     AllTotalMarkupPercent := RoundTo((AllTotalRetailSumm/AllTotalSumm - 1) *100, -2);
   end;
-  exportData.WriteRow([
+  exportData.WriteRowVar([
     '¬сего',
     '',
     '',
-    FloatToStr(RoundTo(AllTotalSumm - AllTotalNDSSumm, -2)),
-    FloatToStr(RoundTo(AllTotalSumm, -2)),
-    FloatToStr(RoundTo(AllTotalRetailSumm, -2)),
+    RoundTo(AllTotalSumm - AllTotalNDSSumm, -2),
+    RoundTo(AllTotalSumm, -2),
+    RoundTo(AllTotalRetailSumm, -2),
     IfThen(abs(AllTotalMarkup) > 0.001,
-      FloatToStr(AllTotalMarkup)),
+      AllTotalMarkup),
     IfThen(abs(AllTotalMarkupPercent) > 0.001,
-      FloatToStr(AllTotalMarkupPercent)),
-    FloatToStr(RoundTo(AllTotalNDSSumm, -2))]);
+      AllTotalMarkupPercent),
+    RoundTo(AllTotalNDSSumm, -2)]);
 end;
 
 function TExportDocRow.NeedExportCounters: Boolean;
@@ -825,18 +857,18 @@ begin
   AllTotalRetailSumm := AllTotalRetailSumm + CurrentTotalRetailSumm;
   AllTotalNDSSumm := AllTotalNDSSumm + CurrentTotalNDSSumm;
 
-  exportData.WriteRow([
+  exportData.WriteRowVar([
     dataQuery.FieldByName('LocalWriteTime').AsString,
     dataQuery.FieldByName('ProviderDocumentId').AsString,
     dataQuery.FieldByName('ProviderName').AsString,
-    prefix + FloatToStr(CurrentTotalSumm - CurrentTotalNDSSumm),
-    prefix + FloatToStr(CurrentTotalSumm),
-    FloatToStr(CurrentTotalRetailSumm),
+    ConvertToVariant(prefix, CurrentTotalSumm - CurrentTotalNDSSumm),
+    ConvertToVariant(prefix, CurrentTotalSumm),
+    CurrentTotalRetailSumm,
     IfThen(abs(CurrentTotalMarkup) > 0.001,
-      FloatToStr(CurrentTotalMarkup)),
+      CurrentTotalMarkup),
     IfThen(abs(CurrentTotalMarkupPercent) > 0.001,
-      FloatToStr(CurrentTotalMarkupPercent)),
-    ndsPrefix + FloatToStr(CurrentTotalNDSSumm)]);
+      CurrentTotalMarkupPercent),
+    ConvertToVariant(ndsPrefix, CurrentTotalNDSSumm)]);
 end;
 
 procedure TExportDocRow.Switch(dataQuery: TMyQuery;

@@ -26,6 +26,7 @@ type
   public
     procedure WriteBlankRow;
     procedure WriteRow(Values: array of string);
+    procedure WriteRowVar(Values: array of Variant);
 
     constructor Create(AFileName : String); overload;
     constructor Create(AStream : TStream); overload;
@@ -33,6 +34,8 @@ type
   end;
 
 implementation
+
+uses Variants;
 
 procedure StreamWriteWordArray(Stream: TStream; wr: array of Word);
 var
@@ -155,6 +158,23 @@ begin
   for I := Low(Values) to High(Values) do
     if Length(Values[i]) > 0 then
       WriteStringCell(Values[i])
+    else
+      WriteBlankCell;
+  Inc(FRow);
+end;
+
+procedure TDataExportAsXls.WriteRowVar(Values: array of Variant);
+var
+  I : Integer;
+begin
+  FCol := 0;
+  for I := Low(Values) to High(Values) do
+    if not VarIsNull(Values[i]) and not VarIsEmpty(Values[i]) then begin
+      if VarIsFloat(Values[i]) then
+        WriteFloatCell(Values[i])
+      else
+        WriteStringCell(VarToStr(Values[i]))
+    end
     else
       WriteBlankCell;
   Inc(FRow);
