@@ -10,14 +10,14 @@ inherited MiniMailForm: TMiniMailForm
   TextHeight = 13
   object pBottom: TPanel
     Left = 0
-    Top = 255
+    Top = 266
     Width = 635
-    Height = 41
+    Height = 30
     Align = alBottom
     TabOrder = 0
     object spbClose: TSpeedButton
       Left = 16
-      Top = 8
+      Top = 3
       Width = 81
       Height = 25
       Caption = #1047#1072#1082#1088#1099#1090#1100

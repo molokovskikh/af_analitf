@@ -322,7 +322,7 @@ begin
   lSubject := TLabel.Create(Self);
   lSubject.Parent := pAttachmentHeaders;
   lSubject.Left := 5;
-  lSubject.Top := 5;
+  lSubject.Top := 2;
   lSubject.Caption := 'Тема:';
   lSubject.Font.Style := lSubject.Font.Style + [fsBold];
 
@@ -330,7 +330,7 @@ begin
   dbtSubject.Name := 'dbtSubject';
   dbtSubject.Parent := pAttachmentHeaders;
   dbtSubject.Left := lSubject.Left + lSubject.Width + 5;
-  dbtSubject.Top := 5;
+  dbtSubject.Top := 2;
   dbtSubject.Width := pAttachmentHeaders.Width - 16;
   dbtSubject.Anchors := dbtSubject.Anchors + [akRight];
   dbtSubject.Font.Style := dbtSubject.Font.Style + [fsBold];
@@ -340,14 +340,14 @@ begin
   lSender := TLabel.Create(Self);
   lSender.Parent := pAttachmentHeaders;
   lSender.Left := 5;
-  lSender.Top := dbtSubject.Top + dbtSubject.Height + 3;
+  lSender.Top := dbtSubject.Top + dbtSubject.Height + 2;
   lSender.Caption := 'От Кого:';
 
   dbtSupplierName := TDBText.Create(Self);
   dbtSupplierName.Name := 'dbtSupplierName';
   dbtSupplierName.Parent := pAttachmentHeaders;
   dbtSupplierName.Left := lSender.Left + lSender.Width + 5;
-  dbtSupplierName.Top := dbtSubject.Top + dbtSubject.Height + 3;
+  dbtSupplierName.Top := lSender.Top;
   dbtSupplierName.Width := FCanvas.TextWidth('Это длинное имя поставщика');
   dbtSupplierName.DataSource := dsMails;
   dbtSupplierName.DataField := fSupplierName.FieldName;
@@ -371,6 +371,7 @@ begin
   pRequestAttachments.Parent := pAttachments;
   pRequestAttachments.Align := alBottom;
   pRequestAttachments.ControlStyle := pRequestAttachments.ControlStyle - [csParentBackground] + [csOpaque];
+  pRequestAttachments.Height := 30;
 
   sbRequestAttachments := TSpeedButton.Create(Self);
   sbRequestAttachments.Height := 25;
@@ -378,7 +379,7 @@ begin
   sbRequestAttachments.Parent := pRequestAttachments;
   sbRequestAttachments.Width := FCanvas.TextWidth(sbRequestAttachments.Caption) + 20;
   sbRequestAttachments.Left := 5;
-  sbRequestAttachments.Top := 8;
+  sbRequestAttachments.Top := 3;
   sbRequestAttachments.OnClick := sbRequestAttachmentsClick;
 
   pAttachments.Height := pAttachmentHeaders.Height + 100 + pRequestAttachments.Height;
@@ -418,6 +419,7 @@ begin
   gbBody.Caption := ' Содержимое письма: ';
   gbBody.Align := alClient;
   gbBody.ControlStyle := gbBody.ControlStyle - [csParentBackground] + [csOpaque];
+  gbBody.Constraints.MinHeight := 200;
 
   dbmBody := TDBMemo.Create(Self);
   dbmBody.Parent := gbBody;

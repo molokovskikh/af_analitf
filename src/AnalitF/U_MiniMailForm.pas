@@ -61,7 +61,7 @@ begin
   else
     Caption := Format('Мини-почта: Получено %d новых сообщений', [newMailCount]);
 
-  Height := 250 + pBottom.Height;
+  Height := 400 + pBottom.Height;
   Width := Application.MainForm.Width;
   Left := Application.MainForm.Left;
   Top := Application.MainForm.Top + Application.MainForm.Height - Height - 40;
