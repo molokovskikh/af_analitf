@@ -458,7 +458,9 @@ Last version: 0.0.5 2012.08.12 (beta).
 '   providers p ' +
 ' where ' +
 '     (dh.ClientId = :ClientId) ' +
-' and (ifnull(dh.WriteTime, dh.LoadTime) BETWEEN :DateFrom AND :DateTo) ' +
+IfThen(rgColumn.ItemIndex = 0,
+' and ((dh.WriteTime is not null and dh.WriteTime BETWEEN :DateFrom AND :DateTo) or (dh.WriteTime is null and dh.LoadTime BETWEEN :DateFrom AND :DateTo)) ',
+' and (dh.LoadTime BETWEEN :DateFrom AND :DateTo) ') +
 ' and (dh.DocumentType = 1) ' +
 ' and (p.FirmCode = dh.FirmCode) ' +
 ' and (dbodies.DocumentId = dh.Id) ' +
