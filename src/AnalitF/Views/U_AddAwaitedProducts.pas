@@ -30,6 +30,7 @@ type
   private
     { Private declarations }
     function CheckExistsAwaitedProduct() : String;
+    function InternalFind(cobmoBox : TComboBox; findText : String) : Boolean;
   public
     { Public declarations }
     SelectedCatalogId : Variant;
@@ -65,15 +66,18 @@ var
 begin
   findText := cbCatalogs.Text;
   tmrUpdateCatalog.Enabled := False;
-  adsCatalogs.Close;
-  adsCatalogs.ParamByName('LikeParam').Value := '%' + cbCatalogs.Text + '%';
-  adsCatalogs.Open;
-  cbCatalogs.Clear;
-  while not adsCatalogs.Eof do begin
-    cbCatalogs.Items.Add(adsCatalogs.FieldByName('CatalogName').AsString);
-    adsCatalogs.Next;
+  if (not InternalFind(cbCatalogs, findText)) then begin
+    adsCatalogs.Close;
+    adsCatalogs.ParamByName('LikeParam').Value := '%' + cbCatalogs.Text + '%';
+    adsCatalogs.Open;
+    cbCatalogs.Clear;
+    while not adsCatalogs.Eof do begin
+      cbCatalogs.Items.Add(adsCatalogs.FieldByName('CatalogName').AsString);
+      adsCatalogs.Next;
+    end;
+    cbCatalogs.Text := findText;
+    cbCatalogs.SelStart := Length(cbCatalogs.Text);
   end;
-  cbCatalogs.Text := findText;
 end;
 
 procedure TAddAwaitedProducts.FormCloseQuery(Sender: TObject;
@@ -114,7 +118,7 @@ end;
 procedure TAddAwaitedProducts.cbCatalogsKeyPress(Sender: TObject;
   var Key: Char);
 begin
-  if (Key > #32) and (Length(cbCatalogs.Text) > 1) then begin
+  if (Length(cbCatalogs.Text) > 1) then begin
     tmrUpdateCatalog.Enabled := False;
     tmrUpdateCatalog.Enabled := True;
   end;
@@ -132,23 +136,32 @@ begin
 end;
 
 procedure TAddAwaitedProducts.tmrUpdateProducersTimer(Sender: TObject);
+var
+  findText : String;
 begin
+  findText := cbProducers.Text;
   tmrUpdateProducers.Enabled := False;
-  adsProducers.Close;
-  adsProducers.ParamByName('LikeParam').Value := '%' + cbProducers.Text + '%';
-  adsProducers.Open;
-  cbProducers.Clear;
-  cbProducers.Items.Add('Все производители');
-  while not adsProducers.Eof do begin
-    cbProducers.Items.Add(adsProducers.FieldByName('Name').AsString);
-    adsProducers.Next;
+
+  if (not InternalFind(cbProducers, findText)) then begin
+    adsProducers.Close;
+    adsProducers.ParamByName('LikeParam').Value := '%' + cbProducers.Text + '%';
+    adsProducers.Open;
+    cbProducers.Clear;
+    cbProducers.Items.Add('Все производители');
+    while not adsProducers.Eof do begin
+      cbProducers.Items.Add(adsProducers.FieldByName('Name').AsString);
+      adsProducers.Next;
+    end;
+
+    cbProducers.Text := findText;
+    cbProducers.SelStart := Length(cbProducers.Text);
   end;
 end;
 
 procedure TAddAwaitedProducts.cbProducersKeyPress(Sender: TObject;
   var Key: Char);
 begin
-  if (Key > #32) and (Length(cbCatalogs.Text) > 1) then begin
+  if (Length(cbProducers.Text) > 1) then begin
     tmrUpdateProducers.Enabled := False;
     tmrUpdateProducers.Enabled := True;
   end;
@@ -192,6 +205,12 @@ end;
 procedure TAddAwaitedProducts.cbCatalogsCloseUp(Sender: TObject);
 begin
   btnOk.SetFocus;
+end;
+
+function TAddAwaitedProducts.InternalFind(cobmoBox: TComboBox;
+  findText: String): Boolean;
+begin
+  Result := (cobmoBox.ItemIndex > -1) and AnsiSameText(findText, cobmoBox.Items[cobmoBox.ItemIndex]);
 end;
 
 end.
