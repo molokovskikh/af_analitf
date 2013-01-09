@@ -27,6 +27,8 @@ procedure ShowNotSended(ALog: String);
 
 procedure ShowNotFoundCertificates(ALog: String);
 
+procedure ShowReallocationResult(Strings: TStrings);
+
 implementation
 
 {$R *.dfm}
@@ -36,7 +38,7 @@ var
   Interval : Integer;
 begin
   with TNotFoundForm.Create(Application) do try
-    Caption := 'Не отправленные заказы';
+    Caption := 'Неотправленные заказы';
     Label1.Caption := 'Данные заказы НЕ ОТПРАВЛЕНЫ, т.к. Поставщик отказал в приеме заказа:';//;
     Label2.Caption := 'Сумма заказа меньше минимально допустимой Поставщиком';
     Label2.Visible := True;
@@ -53,7 +55,7 @@ end;
 procedure ShowNotFound(Strings: TStrings);
 begin
   with TNotFoundForm.Create(Application) do try
-    Caption := 'Не найденные позиции';
+    Caption := 'Ненайденные позиции';
     Label1.Caption := 'Предложения по данным позициям из заказа отсутствуют :';
     Memo.Lines.Assign(Strings);
     ShowModal;
@@ -65,9 +67,21 @@ end;
 procedure ShowNotFoundCertificates(ALog: String);
 begin
   with TNotFoundForm.Create(Application) do try
-    Caption := 'Не найденные сертификаты';
+    Caption := 'Ненайденные сертификаты';
     Label1.Caption := 'Не были получены сертификаты для следующих позиций :';
     Memo.Lines.Text := ALog;
+    ShowModal;
+  finally
+    Free;
+  end;
+end;
+
+procedure ShowReallocationResult(Strings: TStrings);
+begin
+  with TNotFoundForm.Create(Application) do try
+    Caption := 'Найденные/ненайденные позиции';
+    Label1.Caption := 'Результат перераспределения заказа :';
+    Memo.Lines.Assign(Strings);
     ShowModal;
   finally
     Free;

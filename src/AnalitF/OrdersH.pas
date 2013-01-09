@@ -161,6 +161,7 @@ type
     procedure CheckPostedOrdersCountToShow(postedCriteria : String);
     procedure UpdateGridOnLegend(Sender : TObject);
     procedure InternalMoveToPriceAction(Sender: TObject);
+    procedure PrintFindedPositionsToReport(Strings : TStrings; findedPositions : TObjectList);
   public
     frameOrderHeadLegend : TframeOrderHeadLegend;
     procedure SetParameters;
@@ -1293,7 +1294,7 @@ begin
       end;
 
       //если не нашли что-то, то выводим сообщение
-      if Strings.Count > 0 then ShowNotFound(Strings);
+      if Strings.Count > 0 then ShowReallocationResult(Strings);
 
     finally
       Strings.Free;
@@ -1321,6 +1322,7 @@ var
   positionIndex : Integer;
   position : TCurrentOrderItem;
   notFoundPositionCount : Integer;
+  findedPositions : TObjectList;
 
   procedure SetOrder( Order: Integer);
   begin
@@ -1385,31 +1387,42 @@ begin
 
             Application.ProcessMessages;
 
-            if movedOrder.CorrectionExists() then
-              Strings.Add('   прайс-лист ' + movedOrder.PriceName);
+            findedPositions := TObjectList.Create(False);
+            try
+              if movedOrder.CorrectionExists() then begin
+                Strings.Add('Отсутствующие позиции:');
+                Strings.Add('   прайс-лист ' + movedOrder.PriceName);
+              end;
 
-            notFoundPositionCount := 0;
-            for positionIndex := 0 to movedOrder.OrderItems.Count-1 do begin
-              position := TCurrentOrderItem(movedOrder.OrderItems[positionIndex]);
+              notFoundPositionCount := 0;
+              for positionIndex := 0 to movedOrder.OrderItems.Count-1 do begin
+                position := TCurrentOrderItem(movedOrder.OrderItems[positionIndex]);
 
-              if not VarIsNull(position.CoreId) then begin
-                SaveOrderItem(position);
-                if not MoveToPriceFromSend then
-                  DM.MainConnection.ExecSQL('delete from CurrentOrderLists where Id = ' + IntToStr(position.Id), []);
-              end
-              else
-                Inc(notFoundPositionCount);
+                if not VarIsNull(position.CoreId) then begin
+                  SaveOrderItem(position);
+                  findedPositions.Add(position);
+                  if not MoveToPriceFromSend then
+                    DM.MainConnection.ExecSQL('delete from CurrentOrderLists where Id = ' + IntToStr(position.Id), []);
+                end
+                else
+                  Inc(notFoundPositionCount);
 
-              if (not VarIsNull(position.DropReason)) then
-                Strings.Add('      ' + position.ToRestoreReport());
+                //Добавляем в список "Отсутствующие позиции" только те, что не были сопоставлены с Core
+                if (not VarIsNull(position.DropReason)) and VarIsNull(position.CoreId) then
+                  Strings.Add('      ' + position.ToRestoreReport());
+              end;
+
+              PrintFindedPositionsToReport(Strings, findedPositions);
+
+              //Если работает с текущим заказом и все перераспределили, то удаляем заказ
+              if not MoveToPriceFromSend and (notFoundPositionCount = 0) then
+                DM.MainConnection.ExecSQL(
+                  'delete from CurrentOrderLists where OrderId = ' +IntToStr(movedOrder.OrderId) +';'#13#10 +
+                    'delete from CurrentOrderHeads where ORDERID = ' + IntToStr(movedOrder.OrderId),
+                  []);
+            finally
+              findedPositions.Free;
             end;
-
-            //Если работает с текущим заказом и все перераспределили, то удаляем заказ
-            if not MoveToPriceFromSend and (notFoundPositionCount = 0) then
-              DM.MainConnection.ExecSQL(
-                'delete from CurrentOrderLists where OrderId = ' +IntToStr(movedOrder.OrderId) +';'#13#10 +
-                  'delete from CurrentOrderHeads where ORDERID = ' + IntToStr(movedOrder.OrderId),
-                []);
           finally
             offers.Free;
           end;
@@ -1572,6 +1585,40 @@ end;
 procedure TOrdersHForm.actMoveToPriceUpdate(Sender: TObject);
 begin
   actMoveToPrice.Enabled := MainForm.actSendOrders.Enabled;
+end;
+
+function CompareOrderItemByPriceNameAndSynonymName(Item1, Item2: Pointer): Integer;
+var
+  Elem1, Elem2 : TCurrentOrderItem;
+begin
+  Elem1 := TCurrentOrderItem(Item1);
+  Elem2 := TCurrentOrderItem(Item2);
+  Result := AnsiCompareStr(Elem1.Offer.PriceName, Elem2.Offer.PriceName);
+  if Result = 0 then
+    Result := AnsiCompareStr(Elem1.SynonymName, Elem2.SynonymName);
+end;
+
+procedure TOrdersHForm.PrintFindedPositionsToReport(Strings: TStrings;
+  findedPositions: TObjectList);
+var
+  I : Integer;
+  lastPriceCode : Int64;
+  position : TCurrentOrderItem;
+begin
+  if findedPositions.Count > 0 then begin
+    Strings.Add('');
+    Strings.Add('Найденные позиции:');
+    findedPositions.Sort(CompareOrderItemByPriceNameAndSynonymName);
+    lastPriceCode := 0;
+    for I := 0 to findedPositions.Count-1 do begin
+      position := TCurrentOrderItem(findedPositions[i]);
+      if lastPriceCode <> position.Offer.PriceCode then begin
+        lastPriceCode := position.Offer.PriceCode;
+        Strings.Add('   прайс-лист ' + position.Offer.PriceName);
+      end;
+      Strings.Add('      ' + position.ToRestoreReport());
+    end;
+  end;
 end;
 
 initialization
