@@ -89,7 +89,7 @@ begin
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\SmallTicket.frf', '6F72BE7DCB7D425BD5907A5DDD3C4CE7', dfNormal));
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\Summary.frf', 'D5B2A2AEFF3C0F90F255F99D04DF472F', dfNormal));
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\Ticket.frf', 'A811D66F4EC24D486AA912235AA0CEDD', dfNormal));
-  CheckedFiles.Add(TDownloadAppFile.Create('Frf\Waybill.frf', 'C077ADA72C2E1FE5FC232CF19D5206A6', dfNormal));
+  CheckedFiles.Add(TDownloadAppFile.Create('Frf\Waybill.frf', 'E3AEEE7379D1B7DE80E34FC7F9D63ADE', dfNormal));
 end;
 
 function TDownloadAppFilesHelper.NeedDownload: Boolean;

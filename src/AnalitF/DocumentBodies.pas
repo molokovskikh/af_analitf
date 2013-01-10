@@ -1935,7 +1935,7 @@ begin
   totatSupplierSumm := GetTotalSupplierSumm();
 
   frVariables[ 'ClientNameAndAddress'] := DM.GetEditNameAndAddress;
-  frVariables[ 'ProviderName'] := adsDocumentHeadersProviderName.AsString;
+  frVariables[ 'ProviderName'] := Trim(adsDocumentHeadersProviderShortName.AsString);
   frVariables[ 'ProviderDocumentId'] := internalWaybillReportParams.WaybillNumber;
   frVariables[ 'DocumentDate'] := DateToStr(internalWaybillReportParams.WaybillDate);
 
