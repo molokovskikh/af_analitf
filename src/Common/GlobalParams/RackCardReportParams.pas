@@ -8,7 +8,7 @@ uses
   GlobalParams;
 
 type
-  TRackCardSize = (rcsStandart, rcsBig);
+  TRackCardSize = (rcsStandart, rcsBig, rcsRackCard2);
 
   TRackCardReportParams = class(TGlobalParams)
    public

@@ -1741,6 +1741,7 @@ end;
 procedure TDocumentBodiesForm.PrintRackCard;
 var
   RackCardReportParams : TRackCardReportParams;
+  rackCardReportFile : String;
 begin
   RackCardReportParams := TRackCardReportParams.Create(DM.MainConnection);
   try
@@ -1760,8 +1761,16 @@ begin
     frVariables['CertificatesVisible'] := RackCardReportParams.CertificatesVisible;
     frVariables['DateOfReceiptVisible'] := RackCardReportParams.DateOfReceiptVisible;
 
+    case RackCardReportParams.RackCardSize of
+      rcsStandart : rackCardReportFile := 'RackCard.frf';
+      rcsBig : rackCardReportFile := 'BigRackCard.frf';
+      rcsRackCard2 : rackCardReportFile := 'RackCard2.frf';
+      else
+        rackCardReportFile := 'Неизвестный отчет.frf';
+    end;
+
     DM.ShowFastReportWithSave(
-      IfThen(RackCardReportParams.RackCardSize = rcsStandart, 'RackCard.frf', 'BigRackCard.frf'),
+      rackCardReportFile,
       mdReport,
       True);
   finally

@@ -43,6 +43,10 @@ type
       Sender: TObject;
       var CanClose: Boolean);
     function AddCheckBox(Top: Integer; Caption : String; Value : Boolean) : TCheckBox;
+    procedure SizeChange(Sender: TObject);
+    procedure SetCheckBoxEnabled(value : Boolean);
+    procedure SetStateFromDB();
+    procedure SetStateForRackCard2();
   public
     { Public declarations }
     RackCardReportParams : TRackCardReportParams;
@@ -124,6 +128,7 @@ begin
   cbRackCardSize.Style := csDropDownList;
   cbRackCardSize.Items.Add('Стандартный размер');
   cbRackCardSize.Items.Add('Большой размер');
+  cbRackCardSize.Items.Add('Стеллажная карта №2');
   cbRackCardSize.ItemIndex := Integer(RackCardReportParams.RackCardSize);
   cbRackCardSize.Width := Self.Canvas.TextWidth('Стандартный размер') + 50;
   cbRackCardSize.Left := 5;
@@ -166,6 +171,9 @@ begin
   Self.Height := pSettings.Height + pButton.Height + 20;
 
   pSettings.Align := alClient;
+
+  cbRackCardSize.OnChange := SizeChange;
+  SizeChange(cbRackCardSize);
 end;
 
 procedure TEditRackCardReportParamsForm.FormCloseQuery(Sender: TObject;
@@ -174,17 +182,20 @@ begin
   if (ModalResult = mrOK) and CanClose
   then begin
     RackCardReportParams.RackCardSize := TRackCardSize(cbRackCardSize.ItemIndex);
-    RackCardReportParams.DeleteUnprintableElemnts := cbDeleteUnprintableElemnts.Checked;
 
-    RackCardReportParams.ProductVisible := cbProduct.Checked;
-    RackCardReportParams.ProducerVisible := cbProducer.Checked;
-    RackCardReportParams.SerialNumberVisible := cbSerialNumber.Checked;
-    RackCardReportParams.PeriodVisible := cbPeriod.Checked;
-    RackCardReportParams.QuantityVisible := cbQuantity.Checked;
-    RackCardReportParams.ProviderVisible := cbProvider.Checked;
-    RackCardReportParams.CostVisible := cbCost.Checked;
-    RackCardReportParams.CertificatesVisible := cbCertificates.Checked;
-    RackCardReportParams.DateOfReceiptVisible := cbDateOfReceipt.Checked;
+    if (RackCardReportParams.RackCardSize <> rcsRackCard2) then begin
+      RackCardReportParams.DeleteUnprintableElemnts := cbDeleteUnprintableElemnts.Checked;
+
+      RackCardReportParams.ProductVisible := cbProduct.Checked;
+      RackCardReportParams.ProducerVisible := cbProducer.Checked;
+      RackCardReportParams.SerialNumberVisible := cbSerialNumber.Checked;
+      RackCardReportParams.PeriodVisible := cbPeriod.Checked;
+      RackCardReportParams.QuantityVisible := cbQuantity.Checked;
+      RackCardReportParams.ProviderVisible := cbProvider.Checked;
+      RackCardReportParams.CertificatesVisible := cbCertificates.Checked;
+      RackCardReportParams.DateOfReceiptVisible := cbDateOfReceipt.Checked;
+      RackCardReportParams.CostVisible := cbCost.Checked;
+    end;
   end;
 end;
 
@@ -202,6 +213,54 @@ procedure TEditRackCardReportParamsForm.FormDestroy(Sender: TObject);
 begin
   RackCardReportParams.Free;
   inherited;
+end;
+
+procedure TEditRackCardReportParamsForm.SetCheckBoxEnabled(value: Boolean);
+var
+  I : Integer;
+begin
+  for I := 0 to gbColumns.ControlCount-1 do
+    if gbColumns.Controls[i] is TCheckBox then
+      TCheckBox(gbColumns.Controls[i]).Enabled := value;
+end;
+
+procedure TEditRackCardReportParamsForm.SetStateForRackCard2;
+begin
+  cbProduct.Checked := True;
+  cbProducer.Checked := True;
+  cbSerialNumber.Checked := True;
+  cbPeriod.Checked := True;
+  cbQuantity.Checked := True;
+  cbProvider.Checked := True;
+  cbCertificates.Checked := False;
+  cbDateOfReceipt.Checked := True;
+  cbCost.Checked := True;
+end;
+
+procedure TEditRackCardReportParamsForm.SetStateFromDB;
+begin
+  cbProduct.Checked := RackCardReportParams.ProductVisible;
+  cbProducer.Checked := RackCardReportParams.ProducerVisible;
+  cbSerialNumber.Checked := RackCardReportParams.SerialNumberVisible;
+  cbPeriod.Checked := RackCardReportParams.PeriodVisible;
+  cbQuantity.Checked := RackCardReportParams.QuantityVisible;
+  cbProvider.Checked := RackCardReportParams.ProviderVisible;
+  cbCertificates.Checked := RackCardReportParams.CertificatesVisible;
+  cbDateOfReceipt.Checked := RackCardReportParams.DateOfReceiptVisible;
+  cbCost.Checked := RackCardReportParams.CostVisible;
+end;
+
+procedure TEditRackCardReportParamsForm.SizeChange(Sender: TObject);
+begin
+  gbColumns.Enabled := cbRackCardSize.ItemIndex <> 2;
+  cbDeleteUnprintableElemnts.Enabled := gbColumns.Enabled;
+  SetCheckBoxEnabled(gbColumns.Enabled);
+  case cbRackCardSize.ItemIndex of
+    0 : SetStateFromDB();
+    1 : SetStateFromDB();
+    else
+      SetStateForRackCard2();
+  end;
 end;
 
 end.
