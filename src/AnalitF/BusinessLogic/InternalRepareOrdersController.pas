@@ -117,6 +117,8 @@ begin
 
             order := TCurrentOrderHead(info.Orders[orderIndex]);
             Strings.Add('   прайс-лист ' + order.PriceName);
+            if (Length(order.ErrorReason) > 0) then
+              Strings.Add('    ' + order.ErrorReason);
 
             for positionIndex := 0 to order.OrderItems.Count-1 do begin
               position := TCurrentOrderItem(order.OrderItems[positionIndex]);
@@ -230,11 +232,13 @@ begin
 
         if offers.Count = 0 then begin
           WriteExchangeLog('¬осстановление заказа', '«аказ ' + order.ToString() + 'был заморожен, т.к. прайс-лист отсутствует');
+          order.ErrorReason := '«аказ был заморожен, т.к. прайс-лист отсутствует';
           DM.adcUpdate.SQL.Text := ''
       +' update '
       +'   CurrentOrderHeads '
       +'  set '
-      +'     CurrentOrderHeads.Frozen = 1 '
+      +'     CurrentOrderHeads.Frozen = 1, '
+      +'     CurrentOrderHeads.ErrorReason = "' + order.ErrorReason +'" '
       +'   where CurrentOrderHeads.OrderId = :OrderId';
           DM.adcUpdate.ParamByName('OrderId').Value := order.OrderId;
           DM.adcUpdate.Execute;

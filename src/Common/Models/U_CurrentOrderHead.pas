@@ -64,6 +64,7 @@ type
     Closed : Boolean;
     Send : Boolean;
     Frozen : Boolean;
+    ErrorReason : String;
     property OrderItems : TObjectList read FOrderItems;
 
     constructor Create();
@@ -112,14 +113,15 @@ var
   I : Integer;
   item : TCurrentOrderItem;
 begin
-  Result := False;
-  for I := 0 to OrderItems.Count-1 do begin
-    item := TCurrentOrderItem(OrderItems[i]);
-    if not VarIsNull(item.DropReason) then begin
-      Result := True;
-      Exit;
+  Result := Length(ErrorReason) > 0;
+  if not Result then
+    for I := 0 to OrderItems.Count-1 do begin
+      item := TCurrentOrderItem(OrderItems[i]);
+      if not VarIsNull(item.DropReason) then begin
+        Result := True;
+        Exit;
+      end;
     end;
-  end;
 end;
 
 constructor TCurrentOrderHead.Create;

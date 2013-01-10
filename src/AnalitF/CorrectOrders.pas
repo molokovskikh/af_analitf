@@ -322,11 +322,17 @@ var
     if DM.adcUpdate.FieldByName('ErrorReason').IsNull then
       Report.Append(Format('   прайс-лист %s', [PriceName]))
     else
-      Report.Append(Format('%sпрайс-лист %s  -  минимальный заказ %s  -  заказано %s',
-        [IfThen(not ProcessSendOrdersResponse, '   '),
-         PriceName,
-         DM.adcUpdate.FieldByName('ServerMinReq').AsString,
-         CurrToStr(DM.GetSumOrder(DM.adcUpdate.FieldByName('OrderId').AsInteger, False))]));
+      if (DM.adcUpdate.FieldByName('SendResult').AsInteger = Integer(osrLessThanMinReq)) then
+        Report.Append(Format('%sпрайс-лист %s  -  минимальный заказ %s  -  заказано %s',
+          [IfThen(not ProcessSendOrdersResponse, '   '),
+           PriceName,
+           DM.adcUpdate.FieldByName('ServerMinReq').AsString,
+           CurrToStr(DM.GetSumOrder(DM.adcUpdate.FieldByName('OrderId').AsInteger, False))]))
+      else
+        Report.Append(Format('%sпрайс-лист %s  -  %s',
+          [IfThen(not ProcessSendOrdersResponse, '   '),
+           PriceName,
+           DM.adcUpdate.FieldByName('ErrorReason').AsString]));
   end;
 
   procedure AddClient();
@@ -954,7 +960,7 @@ begin
     + 'from '
     + '  CurrentOrderHeads '
     + '  inner join clients   on (clients.clientid = CurrentOrderHeads.ClientId) '
-    + '  inner join CurrentOrderLists on CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId and (CurrentOrderLists.DropReason is not null)'
+    + '  left join CurrentOrderLists on CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId and (CurrentOrderLists.DropReason is not null)'
 
     + ' '
     + 'where '

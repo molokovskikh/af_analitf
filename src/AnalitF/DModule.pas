@@ -3655,6 +3655,19 @@ begin
 
   Result := Result
   + 'update '
+  + '  CurrentOrderHeads '
+  + 'set '
+  + '  CurrentOrderHeads.ErrorReason = null '
+  + 'where '
+  + '     CurrentOrderHeads.Frozen = 1 ';
+  if ClientId > 0 then
+    Result := Result
+    + 'and CurrentOrderHeads.ClientId = ' + IntToStr(ClientId) + '; '
+  else
+    Result := Result + '; ';
+
+  Result := Result
+  + 'update '
   + '  CurrentOrderHeads, '
   + '  CurrentOrderLists '
   + 'set '
