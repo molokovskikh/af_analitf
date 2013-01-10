@@ -270,7 +270,7 @@ begin
   cbPeriod.Checked := True;
   cbProviderDocumentId.Checked := False;
   cbSignature.Checked := True;
-  cbSerialNumber.Checked := False;
+  cbSerialNumber.Checked := True;
   cbDocumentDate.Checked := False;
 end;
 

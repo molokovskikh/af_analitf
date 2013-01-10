@@ -77,7 +77,7 @@ begin
   CheckedFiles.Add(TDownloadAppFile.Create('RollbackAF.exe', '52C9839B7098BF564EB1046CAACF8840', dfCritical));
 
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\BigCostTicket.frf', '55677D04BB2617A9C3F7B3AD611C4AA2', dfNormal));
-  CheckedFiles.Add(TDownloadAppFile.Create('Frf\BigCostTicket2.frf', '8FB863EB65F745D609B44914CF3A093C', dfNormal));
+  CheckedFiles.Add(TDownloadAppFile.Create('Frf\BigCostTicket2.frf', '98C8EAC391DF5B2A79EEDB26067E42F8', dfNormal));
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\BigRackCard.frf', '3FC2F869B1BDC186614E719EA7E10B62', dfNormal));
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\Core.frf', '88A6C956D5A529C15A0A24B3EF064E6D', dfNormal));
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\CoreFirm.frf', '7E7BC36A8C3080F5F03F3AA953CF39FE', dfNormal));
