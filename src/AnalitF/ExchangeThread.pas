@@ -4032,7 +4032,7 @@ begin
     if ImportDownloadOrders then begin
       DM.adcUpdate.SQL.Text :=
         Copy(insertSQL, 1, LENGTH(insertSQL) - 1) +
-        '(ORDERID, CLIENTID, PRICECODE, REGIONCODE, @SendDate) set ORDERDATE = @SendDate + interval -:timezonebias minute, Closed = 0, Send = 1;';
+        '(ORDERID, CLIENTID, PRICECODE, REGIONCODE, @SendDate, MessageTo) set ORDERDATE = @SendDate + interval -:timezonebias minute, Closed = 0, Send = 1;';
       DM.adcUpdate.ParamByName('timezonebias').Value := TimeZoneBias;
       InternalExecute;
     end
