@@ -4830,6 +4830,26 @@ end;
 
 procedure TExchangeThread.MatchingDocumentLineWithRejects;
 begin
+  //Сопоставляем продукты по ProductId, серии и ProduceId
+  DM.adcUpdate.SQL.Text := '' +
+    ' update ' +
+    '   analitf.DocumentBodies, ' +
+    '   analitf.rejects ' +
+    ' set ' +
+    '   DocumentBodies.RejectId = Rejects.Id, ' +
+    '   DocumentBodies.LastRejectStatusTime = now() ' +
+    ' where ' +
+    '     DocumentBodies.RejectId is null ' +
+    ' and (DocumentBodies.ProductId is not null) ' +
+    ' and (DocumentBodies.ProducerId is not null) ' +
+    ' and (Rejects.ProducerId is not null) ' +
+    ' and (DocumentBodies.SerialNumber is not null) ' +
+    ' and (DocumentBodies.ProductId = Rejects.ProductId) ' +
+    ' and (DocumentBodies.ProducerId = Rejects.ProducerId) ' +
+    ' and (DocumentBodies.SerialNumber = Rejects.Series) ' ;
+  InternalExecute;
+  if DM.adcUpdate.RowsAffected > 0 then
+    ExchangeParams.NewRejectsExists := True;
   //Сопоставляем продукты по ProductId и серии
   DM.adcUpdate.SQL.Text := '' +
     ' update ' +
@@ -4842,6 +4862,7 @@ begin
     '     DocumentBodies.RejectId is null ' +
     ' and (DocumentBodies.ProductId is not null) ' +
     ' and (DocumentBodies.SerialNumber is not null) ' +
+    ' and (DocumentBodies.ProducerId is null or Rejects.ProducerId is null) ' +
     ' and (DocumentBodies.ProductId = Rejects.ProductId) ' +
     ' and (DocumentBodies.SerialNumber = Rejects.Series) ' ;
   InternalExecute;
