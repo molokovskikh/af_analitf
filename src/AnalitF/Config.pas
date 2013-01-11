@@ -155,6 +155,7 @@ type
       OnSelectFolderClick : TNotifyEvent;
       var folderNotExistsLabel : TLabel);
     procedure AddWaybillFoldersSheet;
+    procedure OpenWaybillFoldersDataSet();
     procedure SelectFolderClick(Sender : TObject);
     procedure WaybillFolderChange(Sender : TObject);
     procedure OrderFolderChange(Sender : TObject);
@@ -350,7 +351,12 @@ begin
         if Assigned(frameEditAddress) then
           frameEditAddress.SaveChanges;
 
-        if adsWaybillFolders.Active then begin
+        if chbGroupWaybillsBySupplier.Checked <> FGlobalSettingParams.GroupWaybillsBySupplier then
+          FGlobalSettingParams.GroupWaybillsBySupplier := chbGroupWaybillsBySupplier.Checked;
+
+        if adsWaybillFolders.Active or FGlobalSettingParams.GroupWaybillsBySupplier then begin
+          if FGlobalSettingParams.GroupWaybillsBySupplier and not adsWaybillFolders.Active then
+            OpenWaybillFoldersDataSet();
           SoftPost(adsWaybillFolders);
           adsWaybillFolders.ApplyUpdates;
           DatabaseController.BackupDataTable(doiProviderSettings);
@@ -395,8 +401,6 @@ begin
         end;
         if (OldHTTPHost <> dbeHTTPHost.Field.AsString) then
           Result := Result + [ccHTTPHost];
-        if chbGroupWaybillsBySupplier.Checked <> FGlobalSettingParams.GroupWaybillsBySupplier then
-          FGlobalSettingParams.GroupWaybillsBySupplier := chbGroupWaybillsBySupplier.Checked;
         if chbConfirmDeleteOldWaybills.Checked <> FGlobalSettingParams.ConfirmDeleteOldWaybills then
           FGlobalSettingParams.ConfirmDeleteOldWaybills := chbConfirmDeleteOldWaybills.Checked;
         DM.adtParams.Post;
@@ -850,28 +854,7 @@ begin
     or GetNetworkSettings().IsNetworkVersion
     or FGlobalSettingParams.GroupWaybillsBySupplier)
   then begin
-    //Открываем дата сет
-    adsWaybillFolders.CachedUpdates := True;
-    adsWaybillFolders.SQL.Text := ''
-      + 'select '
-      + ' Providers.FirmCode, '
-      + ' Providers.FullName, '
-      + ' ProviderSettings.WaybillFolder, '
-      + ' ProviderSettings.OrderFolder, '
-      + ' ProviderSettings.WaybillUnloadingFolder '
-      + 'from '
-      + '  Providers '
-      + '  inner join ProviderSettings on ProviderSettings.FirmCode = Providers.FirmCode '
-      + 'order by Providers.FullName ';
-    adsWaybillFolders.SQLUpdate.Text := ''
-      + 'update ProviderSettings '
-      + 'set '
-      + '  WaybillFolder = :WaybillFolder, '
-      + '  OrderFolder = :OrderFolder, '
-      + '  WaybillUnloadingFolder = :WaybillUnloadingFolder '
-      + 'where '
-      + ' FirmCode = :FirmCode';
-    adsWaybillFolders.Open;
+    OpenWaybillFoldersDataSet();
 
     gbWaybillFolders := TGroupBox.Create(Self);
     gbWaybillFolders.Caption := ' Настройка поставщиков ';
@@ -1419,6 +1402,32 @@ begin
       '  - скорость подключения: ' + SpeedToTextLevel(state.downloadSpeed) + ' (' + FormatSpeedSize(state.downloadSpeed) + ')';
     AProc.MessageBox(connectionMessage, MB_ICONINFORMATION);
   end;
+end;
+
+procedure TConfigForm.OpenWaybillFoldersDataSet;
+begin
+  //Открываем дата сет
+  adsWaybillFolders.CachedUpdates := True;
+  adsWaybillFolders.SQL.Text := ''
+    + 'select '
+    + ' Providers.FirmCode, '
+    + ' Providers.FullName, '
+    + ' ProviderSettings.WaybillFolder, '
+    + ' ProviderSettings.OrderFolder, '
+    + ' ProviderSettings.WaybillUnloadingFolder '
+    + 'from '
+    + '  Providers '
+    + '  inner join ProviderSettings on ProviderSettings.FirmCode = Providers.FirmCode '
+    + 'order by Providers.FullName ';
+  adsWaybillFolders.SQLUpdate.Text := ''
+    + 'update ProviderSettings '
+    + 'set '
+    + '  WaybillFolder = :WaybillFolder, '
+    + '  OrderFolder = :OrderFolder, '
+    + '  WaybillUnloadingFolder = :WaybillUnloadingFolder '
+    + 'where '
+    + ' FirmCode = :FirmCode';
+  adsWaybillFolders.Open;
 end;
 
 end.
