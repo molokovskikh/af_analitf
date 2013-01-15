@@ -82,7 +82,7 @@ begin
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\Core.frf', '88A6C956D5A529C15A0A24B3EF064E6D', dfNormal));
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\CoreFirm.frf', '7E7BC36A8C3080F5F03F3AA953CF39FE', dfNormal));
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\Defectives.frf', 'A539D049BA094AB2ECBA546B5C5ED5FD', dfNormal));
-  CheckedFiles.Add(TDownloadAppFile.Create('Frf\Invoice.frf', 'BFC063EA218A763F2FDC9FB595DAD3D9', dfNormal));
+  CheckedFiles.Add(TDownloadAppFile.Create('Frf\Invoice.frf', '9546F3B1B6D928D3091C3B7B8ABBDB2D', dfNormal));
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\Orders.frf', '0707E780D4C1C4F6DC7363C76E821E7E', dfNormal));
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\RackCard.frf', '87456D2492CDB0A287BACEEFE7010122', dfNormal));
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\Reestr.frf', '1A18274DE1984B4073930D095898EA19', dfNormal));
