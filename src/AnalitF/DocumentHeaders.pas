@@ -26,8 +26,6 @@ uses
 
 type
   TExportDocRow = class
-   private
-    function ConvertToVariant(prefix : String; value : Double) : Variant;
    public
     CurrentFirmCode : Integer;
     CurrentYearMonth : String;
@@ -769,15 +767,6 @@ end;
 
 { TExportDocRow }
 
-function TExportDocRow.ConvertToVariant(prefix: String;
-  value: Double): Variant;
-begin
-  if Length(prefix) > 0 then
-    Result := prefix + FloatToStr(value)
-  else
-    Result := value;
-end;
-
 constructor TExportDocRow.Create;
 begin
   CurrentFirmCode := 0;
@@ -825,24 +814,12 @@ end;
 procedure TExportDocRow.ProcessRow(dataQuery: TMyQuery;
   exportData: TDataExportAsXls);
 var
-  prefix,
-  ndsPrefix : String;
-
   CurrentTotalSumm,
   CurrentTotalRetailSumm,
   CurrentTotalNDSSumm,
   CurrentTotalMarkup,
   CurrentTotalMarkupPercent : Double;
 begin
-  prefix := '';
-  ndsPrefix := '';
-  if dataQuery.FieldByName('TotalCount').AsInteger <> dataQuery.FieldByName('CostCount').AsInteger
-  then
-    prefix := '!!! ';
-  if dataQuery.FieldByName('TotalCount').AsInteger <> dataQuery.FieldByName('NDSCostCount').AsInteger
-  then
-    ndsPrefix := '!!! ';
-
   CurrentTotalSumm := RoundTo(dataQuery.FieldByName('TotalSumm').AsFloat, -2);
   CurrentTotalRetailSumm := RoundTo(dataQuery.FieldByName('TotalRetailSumm').AsFloat, -2);
   CurrentTotalNDSSumm := RoundTo(dataQuery.FieldByName('TotalNDSSumm').AsFloat, -2);
@@ -863,14 +840,14 @@ begin
     dataQuery.FieldByName('LocalWriteTime').AsString,
     dataQuery.FieldByName('ProviderDocumentId').AsString,
     dataQuery.FieldByName('ProviderName').AsString,
-    ConvertToVariant(prefix, CurrentTotalSumm - CurrentTotalNDSSumm),
-    ConvertToVariant(prefix, CurrentTotalSumm),
+    RoundTo(CurrentTotalSumm - CurrentTotalNDSSumm, -2),
+    RoundTo(CurrentTotalSumm, -2),
     CurrentTotalRetailSumm,
     IfThen(abs(CurrentTotalMarkup) > 0.001,
       CurrentTotalMarkup),
     IfThen(abs(CurrentTotalMarkupPercent) > 0.001,
       CurrentTotalMarkupPercent),
-    ConvertToVariant(ndsPrefix, CurrentTotalNDSSumm)]);
+    RoundTo(CurrentTotalNDSSumm, -2)]);
 end;
 
 procedure TExportDocRow.Switch(dataQuery: TMyQuery;
