@@ -656,7 +656,7 @@ begin
   if (Column.Field = fRecievedAttachment) and not fRecievedAttachment.IsNull
     and fRecievedAttachment.AsBoolean
   then
-    DM.OpenAttachment(fAttachmentId.Value);
+    DM.OpenAttachment(fAttachmentId.Value, fExtension.Value);
   if (Column.Field = fRequestAttachment) and  not fRequestAttachment.IsNull then begin
     tmrUpdateStatus.Enabled := False;
     tmrUpdateStatus.Enabled := True;

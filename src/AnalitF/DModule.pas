@@ -599,7 +599,7 @@ type
     function CertificateSourceExists(serverDocumentBodyId : Int64) : Boolean;
     procedure ShowCertificateWarning();
 
-    function OpenAttachment(attachmentId : Int64) : Integer;
+    procedure OpenAttachment(attachmentId : Int64; extension: String);
 
     procedure StartUp;
 
@@ -5908,30 +5908,13 @@ begin
   end;
 end;
 
-function TDM.OpenAttachment(attachmentId: Int64): Integer;
+procedure TDM.OpenAttachment(attachmentId: Int64; extension: String);
 var
-  id : Int64;
   fileName : String;
 begin
-  Result := 0;
-
-  adcUpdate.Close;
-  adcUpdate.SQL.Text := 'select Id, MailId, FileName as DisplayFileName, FileName, Extension, Size, RequestAttachment, RecievedAttachment from Attachments where Id = :attachmentId';
-  adcUpdate.ParamByName('attachmentId').Value := attachmentId;
-  adcUpdate.Open;
-  try
-    while not adcUpdate.Eof do begin
-      id := TLargeintField(adcUpdate.FieldByName('Id')).Value;
-      fileName := RootFolder() + SDirDocs + '\' + IntToStr(id) + adcUpdate.FieldByName('Extension').AsString;
-      if (FileExists(fileName)) then begin
-        FileExecute(fileName);
-        Inc(Result);
-      end;
-      adcUpdate.Next;
-    end;
-  finally
-    adcUpdate.Close;
-  end;
+  fileName := RootFolder() + SDirDocs + '\' + IntToStr(attachmentId) + extension;
+  if (FileExists(fileName)) then
+    FileExecute(fileName);
 end;
 
 function TDM.NeedUpdateToNewCryptLibMySqlDAfter1651: Boolean;
