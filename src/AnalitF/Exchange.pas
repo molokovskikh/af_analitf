@@ -123,6 +123,14 @@ uses Main, AProc, DModule, Retry, NotFound, Constant, Compact, NotOrders,
 
 {$R *.DFM}
 
+procedure ShowErrorAfterUpdate(errorText : String);
+begin
+  if AnsiStartsText('Новых файлов документов нет.', errorText) then
+    AProc.MessageBox(errorText, MB_ICONINFORMATION)
+  else
+    AProc.MessageBox(errorText, MB_ICONERROR);
+end;
+
 function RunExchange( AExchangeActions: TExchangeActions=[eaGetPrice]): Boolean;
 var
 //  hMenuHandle: HMENU;
@@ -230,7 +238,7 @@ begin
         DM.MainConnection.Close;
         Result := ExchangeForm.ShowModal = mrOk;
         if not Result then
-          AProc.MessageBox(ExchangeForm.ErrMsg, MB_ICONERROR);
+          ShowErrorAfterUpdate(ExchangeForm.ErrMsg);
         Sleep(500);
         DM.MainConnection.Open;
         if not Result and AnsiStartsText('Доступ запрещен', ExchangeForm.ErrMsg)
