@@ -805,11 +805,15 @@ begin
       else
         AddPostParam('DocumentBodyIds', '0');
 
-      if requestAttachs then
+      if requestAttachs then begin
+        WriteExchangeLog('Exchange', ' оличество в списоке запрашиваемых вложений: ' + IntToStr(AttachmentIdsSL.Count));
         for I := 0 to AttachmentIdsSL.Count-1 do
-          AddPostParam('AttachmentIds', AttachmentIdsSL[i])
-      else
+          AddPostParam('AttachmentIds', AttachmentIdsSL[i]);
+      end
+      else begin
+        WriteExchangeLog('Exchange', '—писок запрашиваемых вложений - пуст!');
         AddPostParam('AttachmentIds', '0');
+      end;
 
       if Assigned(MissingProductIdsSL) and (MissingProductIdsSL.Count > 0) then begin
         for I := 0 to MissingProductIdsSL.Count-1 do begin
@@ -4363,12 +4367,15 @@ begin
       absentQuery.Open;
       try
         if absentQuery.RecordCount > 0 then begin
+          WriteExchangeLog('Exchange', ' оличество в результате запроса из базы запрашиваемых вложений: ' + IntToStr(absentQuery.RecordCount));
           AttachmentIdsSL := TStringList.Create;
           while not absentQuery.Eof do begin
             AttachmentIdsSL.Add(absentQuery.FieldByName('Id').AsString);
             absentQuery.Next;
           end;
-        end;
+        end
+        else
+          WriteExchangeLog('Exchange', '–езультат запроса из базы списка запрашиваемых вложений - пустой!');
       finally
         absentQuery.Close;
       end;

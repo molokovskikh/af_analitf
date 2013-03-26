@@ -27,7 +27,8 @@ uses
   Exchange,
   U_ExchangeLog,
   U_frameBaseLegend,
-  U_LegendHolder;
+  U_LegendHolder,
+  UserActions;
 
 type
   TframeMiniMail = class(TFrame)
@@ -89,6 +90,7 @@ type
     procedure mdMailsAfterScroll(DataSet: TDataSet);
 
     procedure UpdateRequestStatus;
+    function GetRequestAttachmentsCount() : Integer;
     procedure UpdateGridOnLegend(Sender : TObject);
   public
     { Public declarations }
@@ -657,7 +659,10 @@ begin
     and fRecievedAttachment.AsBoolean
   then
     DM.OpenAttachment(fAttachmentId.Value, fExtension.Value);
-  if (Column.Field = fRequestAttachment) and  not fRequestAttachment.IsNull then begin
+  if (Column.Field = fRequestAttachment) and not fRequestAttachment.IsNull then begin
+    DM.InsertUserActionLog(
+      uaRequestAttachment,
+      ['Ид вложения: ' + fAttachmentId.AsString, 'Получить?: ' + BoolToStr(not fRequestAttachment.Value, True)]);
     tmrUpdateStatus.Enabled := False;
     tmrUpdateStatus.Enabled := True;
   end
@@ -767,17 +772,35 @@ end;
 
 procedure TframeMiniMail.sbRequestAttachmentsClick(Sender: TObject);
 begin
-  tmrRunRequestAttachments.Enabled := True
+  WriteExchangeLog('TframeMiniMail.sbRequestAttachmentsClick',
+    'sbRequestAttachments.Enabled: ' + BoolToStr(sbRequestAttachments.Enabled, True));
+  WriteExchangeLog('TframeMiniMail.sbRequestAttachmentsClick',
+    'tmrUpdateStatus.Enabled: ' + BoolToStr(tmrUpdateStatus.Enabled, True));
+
+  //Перед запуском проверяем, что кнопка доступа и уже отработал таймер на обновления статуса кнопки
+  if sbRequestAttachments.Enabled and not tmrUpdateStatus.Enabled then
+    tmrRunRequestAttachments.Enabled := True
 end;
 
 procedure TframeMiniMail.tmrRunRequestAttachmentsTimer(Sender: TObject);
+var
+  requestCount : Integer;
 begin
   tmrRunRequestAttachments.Enabled := False;
-  if Owner is TForm then
-    TForm(Owner).Hide;
-  RunExchange([eaRequestAttachments]);
-  if Owner is TForm then
-    TForm(Owner).BringToFront();
+
+  if Assigned(mdAttachments) then
+    SoftPost(mdAttachments);
+  requestCount := GetRequestAttachmentsCount();
+  WriteExchangeLog('TframeMiniMail.tmrRunRequestAttachmentsTimer',
+    'Количество запрашиваемых вложений: ' + IntToStr(requestCount));
+
+  if requestCount > 0 then begin
+    if Owner is TForm then
+      TForm(Owner).Hide;
+    RunExchange([eaRequestAttachments]);
+    if Owner is TForm then
+      TForm(Owner).BringToFront();
+  end;
 end;
 
 procedure TframeMiniMail.SetScrolls(var Memo: TDBMemo);
@@ -850,15 +873,8 @@ begin
 end;
 
 procedure TframeMiniMail.UpdateRequestStatus;
-var
-  requestCount : Integer;
 begin
-  try
-    requestCount := DM.QueryValue('SELECT COUNT(Id) AS newMailCount FROM Attachments where RequestAttachment = 1', [], []);
-  except
-    requestCount := 0;
-  end;
-  sbRequestAttachments.Enabled := requestCount > 0;
+  sbRequestAttachments.Enabled := GetRequestAttachmentsCount() > 0;
 end;
 
 procedure TframeMiniMail.tmrUpdateStatusTimer(Sender: TObject);
@@ -871,6 +887,15 @@ end;
 procedure TframeMiniMail.UpdateGridOnLegend(Sender: TObject);
 begin
   dbgMailHeaders.Invalidate;
+end;
+
+function TframeMiniMail.GetRequestAttachmentsCount: Integer;
+begin
+  try
+    Result := DM.QueryValue('SELECT COUNT(Id) AS newMailCount FROM Attachments where RequestAttachment = 1', [], []);
+  except
+    Result := 0;
+  end;
 end;
 
 end.

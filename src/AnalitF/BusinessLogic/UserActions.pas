@@ -34,7 +34,8 @@ type
     uaHome = 18, //На главную страницу
     uaShowConfig = 19, //Конфигурация
     uaRequestCertificate = 20, //Установили галочку Получить у сертификата
-    uaShowAwaitedProducts = 21 //Ожидаемые позиции
+    uaShowAwaitedProducts = 21, //Ожидаемые позиции
+    uaRequestAttachment = 22 //Установили/сняли галочку Получить у вложения
   );
 
 implementation
