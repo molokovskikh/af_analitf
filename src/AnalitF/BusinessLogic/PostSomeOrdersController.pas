@@ -30,7 +30,9 @@ type
     //заказ требует корректировки
     osrNeedCorrect = 2,
     //заказ нарушает максимальную сумму заказа
-    osrGreateThanMaxOrderSum = 3
+    osrGreateThanMaxOrderSum = 3,
+    //заказ нарушает минимальную сумму дозаказа
+    osrLessThanReorderingMinReq = 4
     );
 
 const
@@ -40,7 +42,8 @@ const
    'Заказ отправлен успешно',
    'Нарушение минимальной суммы заказа.',
    'Требуется корректировка заказа.',
-   'Нарушение максимальной суммы заказа.'
+   'Нарушение максимальной суммы заказа.',
+   'Нарушение минимальной суммы дозаказа.'
    );
 
 type
@@ -759,6 +762,14 @@ begin
                priceName,
                regionName])
           );
+        osrLessThanReorderingMinReq :
+          FExchangeParams.SendedOrdersErrorLog.Add(
+            Format('Заказ № %d по прайс-листу %s (%s) не был отправлен. Причина : %s',
+              [currentHeader.ClientOrderId,
+               priceName,
+               regionName,
+               currentHeader.ErrorReason])
+          );
         else
           FExchangeParams.SendedOrdersErrorLog.Add(
             Format('Заказ № %d по прайс-листу %s (%s) не был отправлен. Код ответа: %d  Причина : %s',
@@ -924,7 +935,7 @@ begin
   Self.ServerOrderId := serverOrderId;
   Self.ErrorReason := errorReason;
   Self.ServerMinReq := serverMinReq;
-  Self.SendDate := FromMysqlToDateTime(sendDate);  
+  Self.SendDate := FromMysqlToDateTime(sendDate);
 end;
 
 destructor TPostOrderHeader.Destroy;
