@@ -40,7 +40,7 @@ begin
   with TNotFoundForm.Create(Application) do try
     Caption := 'Неотправленные заказы';
     Label1.Caption := 'Данные заказы НЕ ОТПРАВЛЕНЫ, т.к. Поставщик отказал в приеме заказа:';//;
-    Label2.Caption := 'Сумма заказа меньше минимально допустимой Поставщиком';
+    Label2.Caption := 'Отправка следующих заказов не удалась';
     Label2.Visible := True;
     Interval := Label2.Top - Label1.Top;
     Memo.Top := Memo.Top + Interval;
