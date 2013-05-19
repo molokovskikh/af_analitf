@@ -81,6 +81,8 @@ type
     procedure dbgAwaitedProductsGetCellParams(Sender: TObject;
       Column: TColumnEh; AFont: TFont; var Background: TColor;
       State: TGridDrawState);
+    procedure dbgCoreCanInput(Sender: TObject; Value: Integer;
+      var CanInput: Boolean);
   private
     { Private declarations }
     procedure OpenAwaitedProducts;
@@ -667,6 +669,14 @@ end;
 procedure TAwaitedProductsForm.UpdateGridOnLegend(Sender: TObject);
 begin
   dbgCore.Invalidate;
+end;
+
+procedure TAwaitedProductsForm.dbgCoreCanInput(Sender: TObject;
+  Value: Integer; var CanInput: Boolean);
+begin
+  CanInput := (not adsCore.IsEmpty) and ( adsCoreSynonymCode.AsInteger >= 0) and
+    (( adsCoreRegionCode.AsLargeInt and DM.adtClientsREQMASK.AsLargeInt) =
+      adsCoreRegionCode.AsLargeInt);
 end;
 
 end.

@@ -231,6 +231,7 @@ inherited AwaitedProductsForm: TAwaitedProductsForm
         OnKeyDown = dbgCoreKeyDown
         InputField = 'OrderCount'
         SearchPosition = spTop
+        OnCanInput = dbgCoreCanInput
       end
     end
   end
