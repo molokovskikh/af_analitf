@@ -965,7 +965,7 @@ begin
     + ' '
     + 'where '
     + '    CurrentOrderHeads.Closed = 0 '
-    + 'and ((CurrentOrderHeads.Frozen = 0) or (CurrentOrderHeads.Frozen = 1 and CurrentOrderHeads.ErrorReason is not null)) '
+    + 'and ((CurrentOrderHeads.Frozen = 0 and CurrentOrderLists.OrderId is not null) or (CurrentOrderHeads.Frozen = 1 and CurrentOrderHeads.ErrorReason is not null)) '
     + 'order by clients.Name, CurrentOrderHeads.PriceName, CurrentOrderLists.SynonymName, CurrentOrderLists.SynonymFirm';
   end;
 end;

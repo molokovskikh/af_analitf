@@ -54,6 +54,8 @@ type
 
 implementation
 
+uses StrUtils;
+
 { TInternalRepareOrders }
 
 function TInternalRepareOrders.CorrectionExists: Boolean;
@@ -211,6 +213,7 @@ var
   orderIndex : Integer;
   offers : TObjectList;
   positionIndex : Integer;
+  freezingReason : String;
 begin
   for I := 0 to _infos.Count-1 do begin
     info := TAddressInfo(_infos[i]);
@@ -228,11 +231,15 @@ begin
         order.GetProductIds());
 
       try
-        order.RestoreOrderItems(offers);
+        //Производим восстановление заказа при существовании предложений
+        //если предложений не существует, то такой заказ должен быть полностью заморожен
+        if (offers.Count > 0) then
+          order.RestoreOrderItems(offers);
 
         if offers.Count = 0 then begin
-          WriteExchangeLog('Восстановление заказа', 'Заказ ' + order.ToString() + 'был заморожен, т.к. прайс-лист отсутствует');
-          order.ErrorReason := 'Заказ был заморожен, т.к. прайс-лист отсутствует';
+          freezingReason := IfThen(order.OrderItems.Count = 0, 'прайс-лист отсутствует', 'предложения отсутствуют');
+          WriteExchangeLog('Восстановление заказа', 'Заказ ' + order.ToString() + ' был заморожен, т.к. ' + freezingReason);
+          order.ErrorReason := 'Заказ был заморожен, т.к. ' + freezingReason;
           DM.adcUpdate.SQL.Text := ''
       +' update '
       +'   CurrentOrderHeads '
