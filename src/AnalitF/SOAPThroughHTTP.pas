@@ -26,6 +26,8 @@ TSOAP = class( TObject)
   function PreparePostValue(PostValue : String) : String;
 private
   FHTTP: TIdHTTP;
+  FCurrentUrl : Integer;
+  FUrls : TStringList;
   FIntercept: TIdConnectionIntercept;
   FExternalHTTP: boolean;
   FResponse: string;
@@ -40,6 +42,8 @@ private
   FHTTPOptions: TIdHTTPOptions;
   FTmpIntercept: TIdConnectionIntercept;
 
+  procedure NextUrl();
+  function GetCurrentUrl() : String;
   function ExtractHost( AURL: string): string;
   procedure OnReconnectError(E : EIdException);
   //Производим POST несколько раз, если возникают ошибки сети
@@ -64,6 +68,7 @@ uses
 
 constructor TSOAP.Create( AURL, AUserName, APassword: string; AOnError : TOnConnectError; AHTTP: TIdHTTP);
 begin
+  FUrls := TStringList.Create;
   FQueryResults := TStringList.Create;
   FOnError := AOnError;
   if Assigned( AHTTP) then
@@ -81,6 +86,9 @@ begin
     FHTTP := TIdHTTP.Create( nil);
   end;
   FURL := AURL;
+  FUrls.Add(FURL);
+  FCurrentUrl := 0;
+  FUrls.Add('ios.ivrn.net');
   FIntercept := TIdConnectionIntercept.Create( nil);
   FHTTP.Intercept := FIntercept;
   FHTTP.Request.BasicAuthentication := True;
@@ -91,6 +99,7 @@ end;
 
 destructor TSOAP.Destroy;
 begin
+  FUrls.Free;
   FQueryResults.Free;
   if not FExternalHTTP then FHTTP.Free
   else
@@ -162,6 +171,7 @@ begin
           raise;
       end;
     end;
+    NextUrl();
   until (PostSuccess);
 end;
 
@@ -274,7 +284,7 @@ var
   ResponseLog : String;
   Utf8Response : String;
 begin
-  FullURL := FURL;
+  FullURL := GetCurrentUrl();
   if FullURL[ Length( FullURL)] <> '/' then FullURL := FullURL + '/';
   FullURL := FullURL + MethodName;
 
@@ -354,6 +364,16 @@ begin
   { QueryResults.DelimitedText не работает из-за пробела, который почему-то считается разделителем }
   while TmpResult <> '' do FQueryResults.Add( GetNextWord( TmpResult, ';'));
   Result := FQueryResults;
+end;
+
+function TSOAP.GetCurrentUrl: String;
+begin
+  Result := FUrls[FCurrentUrl];
+end;
+
+procedure TSOAP.NextUrl;
+begin
+  FCurrentUrl := (FCurrentUrl + 1) mod FUrls.Count;
 end;
 
 end.
