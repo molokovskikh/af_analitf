@@ -66,7 +66,7 @@ var
 begin
   findText := cbCatalogs.Text;
   tmrUpdateCatalog.Enabled := False;
-  if (not InternalFind(cbCatalogs, findText)) then begin
+  if (not InternalFind(cbCatalogs, findText)) and (Length(cbCatalogs.Text) > 2) then begin
     adsCatalogs.Close;
     adsCatalogs.ParamByName('LikeParam').Value := '%' + cbCatalogs.Text + '%';
     adsCatalogs.Open;
