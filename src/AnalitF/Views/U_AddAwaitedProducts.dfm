@@ -82,11 +82,23 @@ inherited AddAwaitedProducts: TAddAwaitedProducts
       'from'
       '  Catalogs'
       'where'
+      '  catalogs.name like :LikeParamFirst'
+      'union all'
+      'select'
+      'Catalogs.FullCode,'
+      'concat(catalogs.name, '#39' '#39', catalogs.form) as CatalogName'
+      'from'
+      '  Catalogs'
+      'where'
       '  concat(catalogs.name, '#39' '#39', catalogs.form) like :LikeParam'
-      'order by CatalogName')
+      '#order by CatalogName')
     Left = 168
     Top = 96
     ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'LikeParamFirst'
+      end
       item
         DataType = ftUnknown
         Name = 'LikeParam'
