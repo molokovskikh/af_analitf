@@ -1834,7 +1834,7 @@ begin
       ' Code, CodeCr, Unit, Volume, Junk, Await, QUANTITY, Note, Period, Doc, ' +
       ' RegistryCost, VitallyImportant, REQUESTRATIO, CryptCost, SERVERCOREID, ' +
       ' ORDERCOST, MINORDERCOUNT, SupplierPriceMarkup, ProducerCost, NDS, RetailVitallyImportant, BuyingMatrixType, ' +
-      ' EAN13, CodeOKP, Series );';
+      ' EAN13, CodeOKP, Series, Exp );';
 {$else}
     SQL.Text :=
       Copy(coreTestInsertSQl, 1, LENGTH(coreTestInsertSQl) - 1) +
@@ -1842,7 +1842,7 @@ begin
       ' Code, CodeCr, Unit, Volume, Junk, Await, QUANTITY, Note, Period, Doc, ' +
       ' RegistryCost, VitallyImportant, REQUESTRATIO, Cost, SERVERCOREID, ' +
       ' ORDERCOST, MINORDERCOUNT, SupplierPriceMarkup, ProducerCost, NDS, RetailVitallyImportant, BuyingMatrixType, ' +
-      ' EAN13, CodeOKP, Series );';
+      ' EAN13, CodeOKP, Series, Exp );';
 {$endif}
 
     InternalExecute;

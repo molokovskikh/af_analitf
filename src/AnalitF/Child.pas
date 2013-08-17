@@ -684,6 +684,7 @@ var
   priceRetColumn : TColumnEh;
   producerNameColumn : TColumnEh;
   noteColumn : TColumnEh;
+  periodColumn : TColumnEh;
 
   procedure ChangeTitleCaption(FieldName, NewTitleCaption : String);
   var
@@ -697,6 +698,10 @@ var
 begin
   Grid.AutoFitColWidths := False;
   try
+  periodColumn := ColumnByNameT(Grid, 'Period');
+  if Assigned(periodColumn) then begin
+    periodColumn.FieldName := 'Exp';
+  end;
   noteColumn := ColumnByNameT(Grid, 'Note');
   if Assigned(noteColumn) then begin
     noteColumn.Visible := True;
