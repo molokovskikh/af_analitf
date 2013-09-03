@@ -1116,8 +1116,9 @@ begin
     if E.Message <> SCannotFocus then begin
       S := 'Sender = ' + Iif(Assigned(Sender), Sender.ClassName, 'nil');
 
-      if not JustRun and (E is EMyError) and not ProcessFatalMySqlError
-        and  DatabaseController.IsFatalError(EMyError(E))
+      if not JustRun and not ProcessFatalMySqlError and
+        ( ( (E is EMyError) and  DatabaseController.IsFatalError(EMyError(E)) )
+          or (E is EAccessViolation))
       then begin
         ProcessFatalMySqlError := True;
         WriteExchangeLog('OnMainAppEx',
