@@ -110,6 +110,7 @@ begin
   Result := Null;
 
   adsCatalogs.Close;
+  adsCatalogs.ParamByName('LikeParamFirst').Value := cbCatalogs.Text;
   adsCatalogs.ParamByName('LikeParam').Value := cbCatalogs.Text;
   adsCatalogs.Open;
   if not adsCatalogs.IsEmpty then
@@ -130,6 +131,7 @@ begin
   Result := Null;
 
   adsProducers.Close;
+  adsProducers.ParamByName('LikeParamFirst').Value := cbProducers.Text;
   adsProducers.ParamByName('LikeParam').Value := cbProducers.Text;
   adsProducers.Open;
   if not adsProducers.IsEmpty then
@@ -145,6 +147,7 @@ begin
 
   if (not InternalFind(cbProducers, findText)) and (Length(cbProducers.Text) > 2) then begin
     adsProducers.Close;
+    adsProducers.ParamByName('LikeParamFirst').Value := cbProducers.Text + '%';
     adsProducers.ParamByName('LikeParam').Value := '%' + cbProducers.Text + '%';
     adsProducers.Open;
     cbProducers.Clear;

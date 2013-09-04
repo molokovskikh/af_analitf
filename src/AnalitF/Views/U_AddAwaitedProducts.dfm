@@ -77,13 +77,22 @@ inherited AddAwaitedProducts: TAddAwaitedProducts
     Connection = DM.MyConnection
     SQL.Strings = (
       'select'
+      'firstCatalog.FullCode, firstCatalog.CatalogName'
+      'from'
+      '(select'
       'Catalogs.FullCode,'
       'concat(catalogs.name, '#39' '#39', catalogs.form) as CatalogName'
       'from'
       '  Catalogs'
       'where'
       '  catalogs.name like :LikeParamFirst'
-      'union all'
+      'order by CatalogName'
+      ') firstCatalog'
+      'union distinct'
+      'select'
+      'likeCatalog.FullCode, likeCatalog.CatalogName'
+      'from'
+      '('
       'select'
       'Catalogs.FullCode,'
       'concat(catalogs.name, '#39' '#39', catalogs.form) as CatalogName'
@@ -91,7 +100,8 @@ inherited AddAwaitedProducts: TAddAwaitedProducts
       '  Catalogs'
       'where'
       '  concat(catalogs.name, '#39' '#39', catalogs.form) like :LikeParam'
-      '#order by CatalogName')
+      'order by CatalogName'
+      ') likeCatalog')
     Left = 168
     Top = 96
     ParamData = <
@@ -115,16 +125,39 @@ inherited AddAwaitedProducts: TAddAwaitedProducts
     Connection = DM.MyConnection
     SQL.Strings = (
       'select'
+      '  firstProducer.Id, firstProducer.Name'
+      'from'
+      '('
+      'select'
+      'Producers.Id,'
+      'Producers.Name'
+      'from'
+      '  Producers'
+      'where'
+      '  Name like :LikeParamFirst'
+      'order by Name'
+      ') firstProducer'
+      'union distinct'
+      'select'
+      '  likeProducer.Id, likeProducer.Name'
+      'from'
+      '('
+      'select'
       'Producers.Id,'
       'Producers.Name'
       'from'
       '  Producers'
       'where'
       '  Name like :LikeParam'
-      'order by Name')
+      'order by Name'
+      ') likeProducer')
     Left = 208
     Top = 96
     ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'LikeParamFirst'
+      end
       item
         DataType = ftUnknown
         Name = 'LikeParam'
