@@ -623,7 +623,7 @@ begin
     if adsCore.FieldByName('vitallyimportant').AsBoolean then
       AFont.Color := LegendHolder.Legends[lnVitallyImportant];
     //если уцененный товар, изменяем цвет
-    if adsCore.FieldByName('Junk').AsBoolean and (AnsiIndexText(Column.FieldName, ['Period', 'Cost']) > -1)
+    if adsCore.FieldByName('Junk').AsBoolean and (AnsiIndexText(Column.FieldName, ['Exp', 'Cost']) > -1)
     then
       Background := LegendHolder.Legends[lnJunk];
     //ожидаемый товар выделяем зеленым

@@ -108,6 +108,7 @@ type
     pClientRight: TPanel;
     pClientLeft: TPanel;
     adsOrdersQuantity: TStringField;
+    adsOrdersExp: TDateField;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;

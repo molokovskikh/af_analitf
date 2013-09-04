@@ -479,6 +479,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    Core.Code,'
       '    Core.CodeCr,'
       '    Core.Period,'
+      '    Core.Exp,'
       '    Core.Volume,'
       '    Core.Note,'
       '    Core.Cost as RealCost,'
@@ -596,7 +597,8 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    Core.Code,'
       '    Core.CodeCr,'
       '    Core.Period,'
-      '    Core.Volume,'
+      '    Core.Exp,'
+      '    Core.Period,'
       '    Core.Note,'
       '    Core.Cost as RealCost,'
       '  if(dop.OtherDelay is null,'
@@ -954,6 +956,9 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
     end
     object adsCoreMarkup: TFloatField
       FieldName = 'Markup'
+    end
+    object adsCoreExp: TDateField
+      FieldName = 'Exp'
     end
   end
   object mdValues: TRxMemoryData

@@ -132,6 +132,7 @@ type
     adsCoreRetailVitallyImportant: TBooleanField;
     adsCoreMarkup: TFloatField;
     adsAvgOrdersOrderCountAvg: TFloatField;
+    adsCoreExp: TDateField;
     procedure FormCreate(Sender: TObject);
     procedure adsCoreBeforeUpdateExecute(Sender: TCustomMyDataSet;
       StatementTypes: TStatementTypes; Params: TDAParams);

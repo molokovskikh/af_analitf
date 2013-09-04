@@ -3569,7 +3569,7 @@ begin
       + ' (Id, ORDERID, CLIENTID, PRODUCTID, CODEFIRMCR, SYNONYMCODE, SYNONYMFIRMCRCODE, '
       + '  CODE, CODECr, Await, Junk, ORDERCOUNT, Price, RealPrice, REQUESTRATIO, ORDERCOST, MINORDERCOUNT, '
       + '  SupplierPriceMarkup, RetailMarkup, Unit, Volume, Note, Period, Doc, '
-      + '  VitallyImportant, CoreQuantity, RegistryCost, ProducerCost, NDS, RetailCost, ServerOrderListId);';
+      + '  VitallyImportant, CoreQuantity, RegistryCost, ProducerCost, NDS, RetailCost, ServerOrderListId) set Exp = Period;';
     InternalExecute;
     
     DM.adcUpdate.SQL.Text := ''

@@ -1173,6 +1173,9 @@ object CoreForm: TCoreForm
     object adsCoreMarkup: TFloatField
       FieldName = 'Markup'
     end
+    object adsCoreExp: TDateField
+      FieldName = 'Exp'
+    end
   end
   object adsRegions: TMyQuery
     Connection = DM.MyConnection
