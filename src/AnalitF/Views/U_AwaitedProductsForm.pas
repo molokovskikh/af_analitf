@@ -165,6 +165,7 @@ type
 
     framePosition : TframePosition;
     frameLegend : TframeLegend;
+    procedure Print( APreview: boolean = False); override;
   end;
 
 procedure ShowAwaitedProducts;
@@ -571,7 +572,7 @@ end;
 
 procedure TAwaitedProductsForm.dbgAwaitedProductsEnter(Sender: TObject);
 begin
-  PrintEnabled := False;
+  PrintEnabled := True;
 end;
 
 procedure TAwaitedProductsForm.dbgAwaitedProductsExit(Sender: TObject);
@@ -677,6 +678,12 @@ begin
   CanInput := (not adsCore.IsEmpty) and ( adsCoreSynonymCode.AsInteger >= 0) and
     (( adsCoreRegionCode.AsLargeInt and DM.adtClientsREQMASK.AsLargeInt) =
       adsCoreRegionCode.AsLargeInt);
+end;
+
+procedure TAwaitedProductsForm.Print(APreview: boolean);
+begin
+  if dbgAwaitedProducts.Focused and adsAwaitedProducts.Active then
+    DM.ShowFastReport('Awaited.frf', adsAwaitedProducts, APreview);
 end;
 
 end.

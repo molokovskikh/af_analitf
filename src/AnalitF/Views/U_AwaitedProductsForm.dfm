@@ -244,7 +244,7 @@ inherited AwaitedProductsForm: TAwaitedProductsForm
     BevelOuter = bvNone
     TabOrder = 2
     object dbgAwaitedProducts: TToughDBGrid
-      Tag = 16
+      Tag = -1
       Left = 0
       Top = 0
       Width = 684
