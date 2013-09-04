@@ -174,6 +174,9 @@ uses
   DownloadAppFiles in '..\AnalitF\Helpers\DownloadAppFiles.pas',
   U_LegendHolder in '..\AnalitF\BusinessLogic\U_LegendHolder.pas',
   U_WaybillGridFactory in '..\AnalitF\Views\U_WaybillGridFactory.pas',
+  U_AwaitedProductsForm in '..\AnalitF\Views\U_AwaitedProductsForm.pas' {AwaitedProductsForm},
+  U_AddAwaitedProducts in '..\AnalitF\Views\U_AddAwaitedProducts.pas' {AddAwaitedProducts},
+  U_CheckTCPThread in '..\AnalitF\Helpers\U_CheckTCPThread.pas',
 
 //end files
   
