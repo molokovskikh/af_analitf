@@ -1077,6 +1077,9 @@ inherited SynonymSearchForm: TSynonymSearchForm
       FieldName = 'OrdersComment'
       Size = 255
     end
+    object adsCoreExp: TDateField
+      FieldName = 'Exp'
+    end
   end
   object adsPreviosOrders: TMyQuery
     Connection = DM.MyConnection

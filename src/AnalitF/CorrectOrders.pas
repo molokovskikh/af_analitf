@@ -1056,6 +1056,7 @@ var
   synonymFirmColumn : TColumnEh;
   priceRetColumn : TColumnEh;
   producerNameColumn : TColumnEh;
+  periodColumn : TColumnEh;
   
   procedure ChangeTitleCaption(FieldName, NewTitleCaption : String);
   var
@@ -1069,6 +1070,10 @@ var
 begin
   Grid.AutoFitColWidths := False;
   try
+  periodColumn := ColumnByNameT(Grid, 'Period');
+  if Assigned(periodColumn) then begin
+    periodColumn.FieldName := 'Exp';
+  end;
   priceRetColumn := ColumnByNameT(Grid, 'PriceRet');
   if not Assigned(priceRetColumn) then
     priceRetColumn := ColumnByNameT(Grid, 'CryptPriceRet');

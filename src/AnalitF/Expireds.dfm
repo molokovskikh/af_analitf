@@ -788,5 +788,8 @@ inherited ExpiredsForm: TExpiredsForm
     object adsExpiredsMarkup: TFloatField
       FieldName = 'Markup'
     end
+    object adsExpiredsExp: TDateField
+      FieldName = 'Exp'
+    end
   end
 end

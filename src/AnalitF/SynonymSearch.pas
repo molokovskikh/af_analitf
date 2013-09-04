@@ -148,6 +148,7 @@ type
     lOrderCountAvg: TLabel;
     dbtOrderCountAvg: TDBText;
     adsCoreOrdersComment: TStringField;
+    adsCoreExp: TDateField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure tmrSearchTimer(Sender: TObject);

@@ -599,6 +599,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    Core.Period,'
       '    Core.Exp,'
       '    Core.Period,'
+      '    Core.Volume,'
       '    Core.Note,'
       '    Core.Cost as RealCost,'
       '  if(dop.OtherDelay is null,'

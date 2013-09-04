@@ -1161,6 +1161,9 @@ object CoreFirmForm: TCoreFirmForm
       FieldName = 'OrdersComment'
       Size = 255
     end
+    object adsCoreExp: TDateField
+      FieldName = 'Exp'
+    end
   end
   object adsCoreWithLike: TMyQuery
     SQL.Strings = (
