@@ -6,8 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, GridsEh, DBGridEh, StdCtrls, DBCtrls, DB, MemDS,
   DBAccess, MyAccess,
-  DBGridHelper,
-  U_frameRejectedPosition;
+  DBGridHelper;
 
 type
   TframeMatchWaybill = class(TFrame)
@@ -88,7 +87,6 @@ type
     procedure SetWaybillByPosition;
   public
     { Public declarations }
-    frameRejectedPosition : TframeRejectedPosition;
     constructor Create(AOwner: TComponent); override;
     procedure PrepareFrame;
     class function AddFrame(
@@ -162,13 +160,6 @@ begin
   dbgWaybill.ReadOnly := False;
 
   dbgWaybill.DataSource := dsDocumentBodies;
-
-  frameRejectedPosition := TframeRejectedPosition.AddFrame(
-    Self,
-    dbgWaybill,
-    dbgWaybill,
-    dbgWaybill,
-    False)
 end;
 
 procedure TframeMatchWaybill.PrepareFrame;

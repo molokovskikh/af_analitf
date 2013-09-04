@@ -4,11 +4,12 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, DBCtrls, ExtCtrls;
+  Dialogs, StdCtrls, DBCtrls, ExtCtrls, DB, MemDS, DBAccess, MyAccess,
+  DModule;
 
 type
   TframeRejectedPosition = class(TFrame)
-    Panel2: TPanel;
+    pMain: TPanel;
     dbtLetterDate: TDBText;
     dbtSeries: TDBText;
     dbtLetterNumber: TDBText;
@@ -16,21 +17,29 @@ type
     Label3: TLabel;
     Label2: TLabel;
     dbmReason: TDBMemo;
+    Label1: TLabel;
+    dsDefectives: TDataSource;
+    adsDefectives: TMyQuery;
+    Label5: TLabel;
+    dbtName: TDBText;
+    Label6: TLabel;
+    dbtProducer: TDBText;
+    procedure Label1Click(Sender: TObject);
   private
     { Private declarations }
+    // На ком будет рисоваться панель
     FSingleParent: TWinControl;
-    FAdvertisingPanel: TWinControl;
+    //Какой контрол будет в фокусе
     FFocusedControl: TWinControl;
-    FShowUnderFocusedControl : Boolean;
   public
     { Public declarations }
     constructor Create(AOwner: TComponent); override;
     class function AddFrame(
       Owner: TComponent;
       SingleParent: TWinControl;
-      AdvertisingPanel: TWinControl;
-      FocusedControl: TWinControl;
-      ShowUnderFocusedControl : Boolean) : TframeRejectedPosition;
+      FocusedControl: TWinControl) : TframeRejectedPosition;
+    procedure HideReject();
+    procedure ShowReject(rejectId : Int64);
   end;
 
 implementation
@@ -40,25 +49,51 @@ implementation
 { TframeRejectedPosition }
 
 class function TframeRejectedPosition.AddFrame(Owner: TComponent;
-  SingleParent, AdvertisingPanel, FocusedControl: TWinControl;
-  ShowUnderFocusedControl: Boolean): TframeRejectedPosition;
+  SingleParent, FocusedControl: TWinControl): TframeRejectedPosition;
 begin
   Result := TframeRejectedPosition.Create(Owner);
   Result.Visible := False;
   Result.Name := 'frameRejectedPosition';
   Result.FSingleParent := SingleParent;
-  Result.FAdvertisingPanel := AdvertisingPanel;
   Result.FFocusedControl := FocusedControl;
-  Result.Parent := Result.FAdvertisingPanel;
-  Result.Align := alClient;
-  Result.FShowUnderFocusedControl := ShowUnderFocusedControl;
+  Result.Parent := Result.FSingleParent;
+  Result.adsDefectives.Connection := DM.MainConnection;
 end;
 
 constructor TframeRejectedPosition.Create(AOwner: TComponent);
 begin
   inherited;
 
+  pMain.ControlStyle := pMain.ControlStyle - [csParentBackground] + [csOpaque];
   Self.ControlStyle := Self.ControlStyle - [csParentBackground] + [csOpaque];
+end;
+
+procedure TframeRejectedPosition.HideReject;
+begin
+  Hide();
+end;
+
+procedure TframeRejectedPosition.Label1Click(Sender: TObject);
+begin
+  if not FFocusedControl.Focused and FFocusedControl.CanFocus() then
+    try FFocusedControl.SetFocus() except end;
+  Hide();
+end;
+
+procedure TframeRejectedPosition.ShowReject(rejectId: Int64);
+begin
+  if adsDefectives.Active then
+    adsDefectives.Close;
+  adsDefectives.ParamByName('RejectId').Value := rejectId;
+  adsDefectives.Open;  
+  Self.Visible := True;
+  //Центрируем по горизонтали
+  Self.Left := (FSingleParent.ClientWidth - Self.Width) div 2;
+
+  //По умолчанию центрируем по вертикали
+  Self.Top := (FSingleParent.ClientHeight - Self.Height) div 2;
+  
+  Self.BringToFront;
 end;
 
 end.
