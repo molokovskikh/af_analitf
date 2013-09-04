@@ -816,13 +816,13 @@ begin
       Background := LegendHolder.Legends[lnUnrejectedWaybillPosition];
 
   if (retailMarkupField.Value < 0) then
-    if AnsiMatchText(Column.Field.FieldName,
+    if AnsiMatchText(Column.FieldName,
         ['RetailMarkup', 'RetailPrice', 'RetailSumm', 'RealMarkup'])
     then
       Background := LegendHolder.Legends[lnRetailPrice];
 
   if (retailMarkupField.Value > maxRetailMarkupField.Value)
-     and AnsiMatchText(Column.Field.FieldName, ['RetailMarkup', 'MaxRetailMarkup'])
+     and AnsiMatchText(Column.FieldName, ['RetailMarkup', 'MaxRetailMarkup'])
   then
     Background := LegendHolder.Legends[lnRetailMarkup];
 

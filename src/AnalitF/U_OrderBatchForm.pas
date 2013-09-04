@@ -368,7 +368,7 @@ begin
   end;
 
   if ((StatusField.Value and Integer(osOrderedLikeFrozen)) > 0)
-    and AnsiSameText(Column.Field.FieldName, 'SynonymName')
+    and AnsiSameText(Column.FieldName, 'SynonymName')
   then
     Background := LegendHolder.Legends[lnOrderedLikeFrozen];
 end;
@@ -1534,11 +1534,11 @@ begin
     if adsCore.FieldByName('vitallyimportant').AsBoolean then
       AFont.Color := LegendHolder.Legends[lnVitallyImportant];
     //если уцененный товар, изменяем цвет
-    if adsCore.FieldByName('Junk').AsBoolean and (AnsiIndexText(Column.Field.FieldName, ['Period', 'Cost']) > -1)
+    if adsCore.FieldByName('Junk').AsBoolean and (AnsiIndexText(Column.FieldName, ['Period', 'Cost']) > -1)
     then
       Background := LegendHolder.Legends[lnJunk];
     //ожидаемый товар выделяем зеленым
-    if adsCore.FieldByName('Await').AsBoolean and AnsiSameText(Column.Field.FieldName, 'SynonymName') then
+    if adsCore.FieldByName('Await').AsBoolean and AnsiSameText(Column.FieldName, 'SynonymName') then
       Background := LegendHolder.Legends[lnAwait];
   end;
 end;
