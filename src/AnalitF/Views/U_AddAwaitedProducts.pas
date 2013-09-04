@@ -143,7 +143,7 @@ begin
   findText := cbProducers.Text;
   tmrUpdateProducers.Enabled := False;
 
-  if (not InternalFind(cbProducers, findText)) then begin
+  if (not InternalFind(cbProducers, findText)) and (Length(cbProducers.Text) > 2) then begin
     adsProducers.Close;
     adsProducers.ParamByName('LikeParam').Value := '%' + cbProducers.Text + '%';
     adsProducers.Open;
