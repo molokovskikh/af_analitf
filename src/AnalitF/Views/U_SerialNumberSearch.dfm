@@ -120,6 +120,7 @@ inherited SerialNumberSearchForm: TSerialNumberSearchForm
       '  dbodies.ServerDocumentId,'
       '  p.ShortName as ProviderName,'
       '  dh.WriteTime as LocalWriteTime, '
+      '  ifnull(dh.DownloadId, dh.Id) as DownloadId,'
       '  dbodies.SerialNumber,'
       '  dbodies.Product,'
       '  dbodies.RequestCertificate,'
@@ -187,6 +188,9 @@ inherited SerialNumberSearchForm: TSerialNumberSearchForm
     end
     object adsSerialNumberSearchServerDocumentId: TLargeintField
       FieldName = 'ServerDocumentId'
+    end
+    object adsSerialNumberSearchDownloadId: TLargeintField
+      FieldName = 'DownloadId'
     end
   end
   object tmrPrintedChange: TTimer

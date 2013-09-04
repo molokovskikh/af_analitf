@@ -297,7 +297,10 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       'sum(db.Amount) as TotalSumm,'
       'sum(db.RetailAmount) as TotalRetailSumm,'
       'count(db.RejectId) as RejectsCount,'
-      'max(db.LastRejectStatusTime) as LastRejectStatusTime'
+      'max(db.LastRejectStatusTime) as LastRejectStatusTime,'
+      
+        'if(c.ClientId is not null, c.Name, '#39#1040#1076#1088#1077#1089' '#1086#1090#1082#1083#1102#1095#1077#1085'/'#1091#1076#1072#1083#1077#1085' '#1080#1079' '#1089#1080#1089 +
+        #1090#1077#1084#1099#39') as AddressName'
       'from'
       '  DocumentHeaders dh,'
       '  providers p,'
@@ -382,6 +385,10 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     object adsDocumentHeadersRejectsCount: TLargeintField
       FieldName = 'RejectsCount'
     end
+    object adsDocumentHeadersAddressName: TStringField
+      FieldName = 'AddressName'
+      Size = 255
+    end
   end
   object dsDocumentHeaders: TDataSource
     DataSet = adsDocumentHeaders
@@ -389,7 +396,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     Top = 111
   end
   object shDocumentHeaders: TStrHolder
-    Capacity = 28
+    Capacity = 44
     Macros = <>
     Left = 304
     Top = 135
@@ -423,9 +430,16 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       '636f756e742864622e52656a65637449642920'
       '202061732052656a65637473436f756e742c'
       '6d61782864622e4c61737452656a65637453746174757354696d652920617320'
-      '20204c61737452656a65637453746174757354696d65'
+      '20204c61737452656a65637453746174757354696d652c'
+      
+        '696628632e436c69656e744964206973206e6f74206e756c6c2c20632e4e616d' +
+        '652c2027c0e4f0e5f120eef2eaebfef7e5ed2ff3e4e0ebe5ed20e8e720f1e8f1' +
+        'f2e5ecfb272920617320416464726573734e616d65'
       '66726f6d'
       '2020446f63756d656e7448656164657273206468'
+      
+        '20206c656674206a6f696e20636c69656e74732063206f6e20632e436c69656e' +
+        '744964203d2064682e436c69656e744964'
       
         '20206c656674206a6f696e2070726f7669646572732070206f6e20702e466972' +
         '6d436f6465203d2064682e4669726d436f646520'
@@ -433,7 +447,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
         '20206c656674206a6f696e20446f63756d656e74426f64696573206462206f6e' +
         '2064622e446f63756d656e744964203d2064682e4964'
       '7768657265'
-      '202020202864682e436c69656e744964203d203a436c69656e74496429')
+      '2020202831203d203129')
   end
   object tmrChangeFilterSuppliers: TTimer
     Enabled = False

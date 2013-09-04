@@ -184,6 +184,7 @@ begin
     FDBGrid.OnGetCellParams := DBGridGetCellParams;
   end;
   ProcessChangeCheckBox;
+  Self.Width := lFilter.Left + lFilter.Canvas.TextWidth(filterText) + 10;
 end;
 
 procedure TframeFilterAddresses.AllOrdersClick(Sender: TObject);
