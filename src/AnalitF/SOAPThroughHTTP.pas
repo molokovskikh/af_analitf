@@ -11,7 +11,9 @@ type
 
 TSOAP = class( TObject)
 
-  constructor Create( AURL, AUserName, APassword: string; AOnError : TOnConnectError; AHTTP: TIdHTTP = nil);
+  constructor Create( AURL, AUserName, APassword: string; AOnError : TOnConnectError;
+    AServiceNameBegin, AServiceNameEnd : String;
+    AHTTP: TIdHTTP = nil);
   destructor Destroy; override;
 
   function Invoke( AMethodName: string; AParams, AValues: array of string): TStrings; overload;
@@ -33,6 +35,7 @@ private
   FResponse: string;
   FURL: string;
   FOnError : TOnConnectError;
+  FServiceName : String;
 
   FQueryResults : TStringList;
 
@@ -47,7 +50,7 @@ private
   function ExtractHost( AURL: string): string;
   procedure OnReconnectError(E : EIdException);
   //ѕроизводим POST несколько раз, если возникают ошибки сети
-  procedure DoPost(AFullURL : String; ASource: TStringList);
+  procedure DoPost(AMethodName : String; ASource: TStringList);
 
   //Ётот метод необходим, чтобы формировать ответ от сервера,
   //т.к. в свойстве FHTTP.Response.ContentStream он бывает не полным из-за ошибок при передачи данных
@@ -57,6 +60,7 @@ private
   procedure HttpReceiveHeadersAvailable(Sender: TObject; AHeaders: TIdHeaderList; var VContinue: Boolean);
   procedure OnSend( ASender: TIdConnectionIntercept; var ABuffer : TIdBytes);
 {$endif}
+  function GetFullUrl(AHost : String) : String;
 end;
 
 implementation
@@ -66,11 +70,14 @@ uses
 
 { TSOAP }
 
-constructor TSOAP.Create( AURL, AUserName, APassword: string; AOnError : TOnConnectError; AHTTP: TIdHTTP);
+constructor TSOAP.Create( AURL, AUserName, APassword: string; AOnError : TOnConnectError;
+  AServiceNameBegin, AServiceNameEnd : String;
+  AHTTP: TIdHTTP);
 begin
   FUrls := TStringList.Create;
   FQueryResults := TStringList.Create;
   FOnError := AOnError;
+  FServiceName := AServiceNameBegin + AServiceNameEnd;
   if Assigned( AHTTP) then
   begin
     FExternalHTTP := True;
@@ -88,7 +95,11 @@ begin
   FURL := AURL;
   FUrls.Add(FURL);
   FCurrentUrl := 0;
-  FUrls.Add('ios.ivrn.net');
+{$ifndef DEBUG}
+  FUrls.Add(GetFullUrl('ios.ivrn.net'));
+//  ѕока адрес ios.ctline.ru не запущен
+//  FUrls.Add(GetFullUrl('ios.ctline.ru'));
+{$endif}
   FIntercept := TIdConnectionIntercept.Create( nil);
   FHTTP.Intercept := FIntercept;
   FHTTP.Request.BasicAuthentication := True;
@@ -111,25 +122,36 @@ begin
   FIntercept.Free;
 end;
 
-procedure TSOAP.DoPost(AFullURL: String; ASource: TStringList);
+procedure TSOAP.DoPost(AMethodName: String; ASource: TStringList);
 const
   FReconnectCount = 10;
 var
   ErrorCount  : Integer;
   PostSuccess : Boolean;
+  FullUrl : String;
 begin
   ErrorCount := 0;
   PostSuccess := False;
   repeat
     try
 
-      FHTTP.Post( AFullURL, ASource);
+      FullUrl := GetCurrentUrl();
+      if FullUrl[ Length( FullUrl)] <> '/' then FullUrl := FullUrl + '/';
+      FullUrl := FullUrl + AMethodName;
+
+{$ifdef DEBUG}
+      WriteExchangeLog(
+        'TSOAP.SimpleInvoke:' + FHTTP.Name,
+        'Url : ' + FullUrl);
+{$endif}
+      FHTTP.Post(FullUrl, ASource);
 
       PostSuccess := True;
 
     except
       on E : EIdCouldNotBindSocket do begin
         if (ErrorCount < FReconnectCount) then begin
+          NextUrl();
           try
             FHTTP.Disconnect;
           except
@@ -143,6 +165,7 @@ begin
       end;
       on E : EIdConnClosedGracefully do begin
         if (ErrorCount < FReconnectCount) then begin
+          NextUrl();
           try
             FHTTP.Disconnect;
           except
@@ -159,6 +182,7 @@ begin
           ((e.LastError = Id_WSAECONNRESET) or (e.LastError = Id_WSAETIMEDOUT)
             or (e.LastError = Id_WSAENETUNREACH) or (e.LastError = Id_WSAECONNREFUSED))
         then begin
+          NextUrl();
           try
             FHTTP.Disconnect;
           except
@@ -171,7 +195,6 @@ begin
           raise;
       end;
     end;
-    NextUrl();
   until (PostSuccess);
 end;
 
@@ -277,17 +300,12 @@ function TSOAP.SimpleInvoke(
   MethodName: string;
   PostParams: TStringList): String;
 var
-  FullURL: string;
   start, stop: integer;
   TmpResult : String;
   ForceEncodeParamsSet : Boolean;
   ResponseLog : String;
   Utf8Response : String;
 begin
-  FullURL := GetCurrentUrl();
-  if FullURL[ Length( FullURL)] <> '/' then FullURL := FullURL + '/';
-  FullURL := FullURL + MethodName;
-
   FResponse := '';
   try
 
@@ -307,7 +325,7 @@ begin
         'MethodName : ' + MethodName);
 {$endif}
 
-      DoPost(FullURL, PostParams);
+      DoPost(MethodName, PostParams);
     finally
       if ForceEncodeParamsSet then
         FHTTP.HTTPOptions := FHTTP.HTTPOptions + [hoForceEncodeParams];
@@ -374,6 +392,11 @@ end;
 procedure TSOAP.NextUrl;
 begin
   FCurrentUrl := (FCurrentUrl + 1) mod FUrls.Count;
+end;
+
+function TSOAP.GetFullUrl(AHost: String): String;
+begin
+  Result := 'https://' + AHost + '/' + FServiceName + '/code.asmx';
 end;
 
 end.

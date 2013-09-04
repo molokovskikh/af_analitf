@@ -48,6 +48,8 @@ begin
       FHTTPName,
       FHTTPPass,
       OnConnectError,
+      DM.SerBeg,
+      DM.SerEnd,
       ReceiveHTTP);
     try
       Log('Reclame', 'Запущен процесс для получения рекламного блока');

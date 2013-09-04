@@ -642,6 +642,8 @@ begin
     HTTPName,
     HTTPPass,
     OnConnectError,
+    DM.SerBeg,
+    DM.SerEnd,
     ExchangeForm.HTTP);
 end;
 
