@@ -1,3 +1,3 @@
 [submodule "src/lib/thtmlviewer"]
 	path = src/lib/thtmlviewer
-	url = ssh://git.analit.net/var/www/git/thtmlviewer.git
+	url = git@git.analit.net:root/thtmlviewer-git
