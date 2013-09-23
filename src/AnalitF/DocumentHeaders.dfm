@@ -5,6 +5,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
   Caption = #1044#1086#1082#1091#1084#1077#1085#1090#1099
   ClientWidth = 882
   OnDestroy = FormDestroy
+  OnHide = FormHide
   PixelsPerInch = 96
   TextHeight = 13
   object pTop: TPanel [0]

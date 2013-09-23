@@ -110,6 +110,7 @@ type
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure sbAddClick(Sender: TObject);
     procedure cbRejectChange(Sender: TObject);
+    procedure FormHide(Sender: TObject);
   private
     { Private declarations }
     legeng : TframeBaseLegend;
@@ -368,12 +369,6 @@ end;
 procedure TDocumentHeaderForm.FormDestroy(Sender: TObject);
 begin
   tmrProcessWaybils.Enabled := False;
-  TDBGridHelper.SaveColumnsLayout(dbgHeaders, Self.ClassName);
-  TGlobalParamsHelper.SaveParam(
-    DM.MainConnection,
-    'DocumentFilterColumn',
-    rgColumn.ItemIndex
-    );
   ProcessedList.Free;
   csProcessedList.Free;
   inherited;
@@ -988,6 +983,17 @@ procedure TDocumentHeaderForm.cbRejectChange(Sender: TObject);
 begin
   UpdateOrderDataset;
   dbgHeaders.SetFocus;
+end;
+
+procedure TDocumentHeaderForm.FormHide(Sender: TObject);
+begin
+  inherited;
+  TDBGridHelper.SaveColumnsLayout(dbgHeaders, Self.ClassName);
+  TGlobalParamsHelper.SaveParam(
+    DM.MainConnection,
+    'DocumentFilterColumn',
+    rgColumn.ItemIndex
+    );
 end;
 
 end.
