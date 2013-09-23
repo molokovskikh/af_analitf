@@ -4,6 +4,15 @@ interface
 
 uses Graphics;
 
+type
+  TMarginType = (
+    // наценки ЖНВЛС
+    mtVitally,
+    // наценки Прочий ассортимент
+    mtOther,
+    // наценки 18%
+    mtNDS18);
+
 const
   REG_CLR = clLime;
   COMPACT_PERIOD = 3;
