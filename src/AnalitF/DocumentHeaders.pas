@@ -226,7 +226,8 @@ begin
     pTop.Height,
     dbgHeaders,
     OnChangeCheckBoxAllOrders,
-    OnChangeFilterAllOrders);
+    OnChangeFilterAllOrders,
+    'Все адреса');
   frameFilterAddresses.Visible := GetAddressController.AllowAllOrders;
   if frameFilterAddresses.Visible then
     sbListToExcel.Left := frameFilterAddresses.Left + frameFilterAddresses.Width + 5
