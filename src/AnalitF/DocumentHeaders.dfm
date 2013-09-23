@@ -12,16 +12,16 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     Left = 0
     Top = 0
     Width = 882
-    Height = 45
+    Height = 53
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
     DesignSize = (
       882
-      45)
+      53)
     object lBefore: TLabel
-      Left = 139
-      Top = 16
+      Left = 131
+      Top = 6
       Width = 60
       Height = 13
       Caption = #1079#1072' '#1087#1077#1088#1080#1086#1076' '#1089
@@ -33,8 +33,8 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       ParentFont = False
     end
     object lInterval: TLabel
-      Left = 292
-      Top = 16
+      Left = 179
+      Top = 29
       Width = 12
       Height = 13
       Caption = #1087#1086
@@ -46,16 +46,16 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       ParentFont = False
     end
     object Bevel1: TBevel
-      Left = 137
+      Left = 129
       Top = 0
-      Width = 745
-      Height = 45
+      Width = 753
+      Height = 53
       Align = alClient
       Shape = bsBottomLine
     end
     object spDelete: TSpeedButton
-      Left = 398
-      Top = 9
+      Left = 280
+      Top = 11
       Width = 97
       Height = 27
       Caption = #1059#1076#1072#1083#1080#1090#1100
@@ -96,8 +96,8 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       OnClick = sbAddClick
     end
     object dtpDateFrom: TDateTimePicker
-      Left = 204
-      Top = 13
+      Left = 193
+      Top = 2
       Width = 81
       Height = 21
       Date = 36526.631636412040000000
@@ -112,8 +112,8 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       OnCloseUp = dtpDateCloseUp
     end
     object dtpDateTo: TDateTimePicker
-      Left = 311
-      Top = 13
+      Left = 193
+      Top = 26
       Width = 81
       Height = 21
       Date = 0.631934409720997800
@@ -124,8 +124,8 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     object rgColumn: TRadioGroup
       Left = 0
       Top = 0
-      Width = 137
-      Height = 45
+      Width = 129
+      Height = 53
       Align = alLeft
       Caption = ' '#1060#1080#1083#1100#1090#1088#1086#1074#1072#1090#1100' '
       ItemIndex = 0
@@ -138,14 +138,14 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     object gbReject: TGroupBox
       Left = 424
       Top = 0
-      Width = 169
+      Width = 163
       Height = 45
       Caption = ' '#1047#1072#1073#1088#1072#1082#1086#1074#1082#1072' '
       TabOrder = 3
       object cbReject: TComboBox
         Left = 9
         Top = 16
-        Width = 152
+        Width = 149
         Height = 21
         Style = csDropDownList
         ItemHeight = 13
@@ -161,9 +161,9 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
   end
   object pGrid: TPanel [1]
     Left = 0
-    Top = 45
+    Top = 53
     Width = 882
-    Height = 404
+    Height = 396
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
@@ -172,7 +172,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       Left = 0
       Top = 0
       Width = 882
-      Height = 404
+      Height = 396
       Align = alClient
       AllowedOperations = [alopUpdateEh]
       AllowedSelections = [gstRecordBookmarks, gstRectangle, gstAll]

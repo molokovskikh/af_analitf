@@ -215,7 +215,8 @@ begin
     pTop,
     gbReject.Left + gbReject.Width,
     pTop.Height,
-    OnChangeFilterSuppliers);
+    OnChangeFilterSuppliers,
+    True);
   tmrChangeFilterSuppliers.Enabled := False;
   tmrChangeFilterSuppliers.Interval := 500;
 
