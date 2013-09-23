@@ -24,7 +24,8 @@ uses
   PrntsEh,
   U_LegendHolder,
   AddressController,
-  U_frameFilterAddresses;
+  U_frameFilterAddresses,
+  U_Address;
 
 type
   TExportDocRow = class
@@ -745,6 +746,8 @@ begin
 end;
 
 procedure TDocumentHeaderForm.PrepareBeforeNewRejects;
+var
+  I : Integer;
 begin
   dtpDateFrom.Date := StartOfTheDay( IncDay(Date(), -FGS.NewRejectsDayCount));
   dtpDateTo.Date := Date;
@@ -761,6 +764,12 @@ begin
     cbReject.ItemIndex := 1;
   finally
     cbReject.OnChange := cbRejectChange;
+  end;
+
+  if GetAddressController().AllowAllOrders and GetAddressController().ShowAllOrders then begin
+    for i := 0 to GetAddressController().Addresses.Count - 1 do
+      TAddress(GetAddressController().Addresses[i]).Selected := True;
+    frameFilterAddresses.UpdateFrame();
   end;
 end;
 
