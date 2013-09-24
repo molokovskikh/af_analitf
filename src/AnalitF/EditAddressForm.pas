@@ -29,13 +29,17 @@ type
 
     tsVitallyImportantMarkups : TTabSheet;
     frameEditVitallyImportantMarkups : TframeEditVitallyImportantMarkups;
-    
+
+    tsRetailNDS18Markups : TTabSheet;
+    frameEditRetailNDS18Markups : TframeEditVitallyImportantMarkups;
+
     procedure CreateVisibleComponents;
     procedure AddBottomPanel;
     procedure AddPageControl;
     procedure AddAddressSheet;
     procedure AddRetailMarkups;
     procedure AddVitallyImportantMarkups;
+    procedure AddRetailNDS18Markups;
 
     procedure FormCloseQuery(
       Sender: TObject;
@@ -137,6 +141,22 @@ begin
   frameEditRetailMarkups.Align := alClient;
 end;
 
+procedure TEditAddressFrm.AddRetailNDS18Markups;
+begin
+  tsRetailNDS18Markups := TTabSheet.Create(Self);
+  tsRetailNDS18Markups.PageControl := pcMain;
+  tsRetailNDS18Markups.Caption := 'Наценки товара с 18% НДС';
+
+  frameEditRetailNDS18Markups := TframeEditVitallyImportantMarkups
+    .CreateFrame(Self, doiRetailMargins, DM.LoadRetailMargins, 'frameEditRetailNDS18Markups');
+
+  tsRetailNDS18Markups.Constraints.MinHeight := frameEditRetailNDS18Markups.Height;
+  tsRetailNDS18Markups.Constraints.MinWidth := frameEditRetailNDS18Markups.Width;
+
+  frameEditRetailNDS18Markups.Parent := tsRetailNDS18Markups;
+  frameEditRetailNDS18Markups.Align := alClient;
+end;
+
 procedure TEditAddressFrm.AddVitallyImportantMarkups;
 begin
   tsVitallyImportantMarkups := TTabSheet.Create(Self);
@@ -163,9 +183,10 @@ begin
   AddPageControl;
   AddBottomPanel;
   AddAddressSheet;
-  AddRetailMarkups;
   AddVitallyImportantMarkups;
-  
+  AddRetailMarkups;
+  AddRetailNDS18Markups;
+
   Self.Width := pcMain.Width;
   pcMain.Align := alClient;
   pButton.Constraints.MinHeight := pButton.Height;

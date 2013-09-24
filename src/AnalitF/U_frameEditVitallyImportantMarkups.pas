@@ -75,7 +75,8 @@ type
     constructor CreateFrame(
       AOwner: TComponent;
       TableId : TDatabaseObjectId;
-      LoadMarkups : TThreadMethod); overload;
+      LoadMarkups : TThreadMethod;
+      AComponentName : String = ''); overload;
     destructor Destroy(); override;
     procedure SaveVitallyImportantMarkups;
     function ProcessCloseQuery(var CanClose: Boolean) : Boolean;
@@ -210,18 +211,22 @@ end;
 constructor TframeEditVitallyImportantMarkups.CreateFrame(
   AOwner: TComponent;
   TableId : TDatabaseObjectId;
-  LoadMarkups : TThreadMethod);
+  LoadMarkups : TThreadMethod;
+  AComponentName : String = '');
 begin
+  inherited Create(AOwner);
+
   FTableId := TableId;
   VitallyEdit := TableId = doiVitallyImportantMarkups;
   FLoadMarkups := LoadMarkups;
   FMarkups := TObjectList.Create(True);
-  Self.Name := 'frameEdit' + DatabaseController.GetById(TableId).Name;
+  if AComponentName <> '' then
+    Self.Name := AComponentName
+  else
+    Self.Name := 'frameEditMargins' + DatabaseController.GetById(TableId).Name;
   FParams := TVitallyImportantMarkupsParams.Create(DM.MainConnection);
 
-  inherited Create(AOwner);
   MarkupsChanges := False;
-
 
   CreateNonVisibleComponents;
   CreateVisibleComponents;

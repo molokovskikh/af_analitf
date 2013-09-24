@@ -164,6 +164,7 @@ type
     procedure SelectWaybillUnloadingFolderClick(Sender : TObject);
     procedure AddVitallyImportantMarkups;
     procedure AddRetailMarkups;
+    procedure AddNDS18Markups;
     procedure AddBottomPanel;
     procedure AddNetworkVersionSettings();
     procedure AddLegendsSettings();
@@ -227,6 +228,9 @@ type
 
     tsVitallyImportantMarkups : TTabSheet;
     frameEditVitallyImportantMarkups : TframeEditVitallyImportantMarkups;
+
+    tsNDS18Markups : TTabSheet;
+    frameEditNDS18Markups : TframeEditVitallyImportantMarkups;
 
     frameEditRetailMarkups : TframeEditVitallyImportantMarkups;
 
@@ -763,8 +767,9 @@ begin
   FGlobalSettingParams := TGlobalSettingParams.Create(DM.MainConnection);
   inherited;
   AddBottomPanel;
-  AddRetailMarkups;
   AddVitallyImportantMarkups;
+  AddRetailMarkups;
+  AddNDS18Markups;
   AddEditAddressSheet;
   AddWaybillFoldersSheet;
   AddNetworkVersionSettings();
@@ -791,7 +796,7 @@ procedure TConfigForm.AddEditAddressSheet;
 begin
   tsEditAddress := TTabSheet.Create(Self);
   tsEditAddress.PageControl := PageControl;
-  tsEditAddress.PageIndex := tsVitallyImportantMarkups.PageIndex + 1;
+  tsEditAddress.PageIndex := tsNDS18Markups.PageIndex + 1;
   tsEditAddress.Caption := 'Накладные';
 
   frameEditAddress := nil;
@@ -971,7 +976,7 @@ procedure TConfigForm.AddVitallyImportantMarkups;
 begin
   tsVitallyImportantMarkups := TTabSheet.Create(Self);
   tsVitallyImportantMarkups.PageControl := PageControl;
-  tsVitallyImportantMarkups.PageIndex := 1;
+  tsVitallyImportantMarkups.PageIndex := 0;
   tsVitallyImportantMarkups.Caption := 'Наценки ЖНВЛС';
 
   frameEditVitallyImportantMarkups := TframeEditVitallyImportantMarkups
@@ -986,6 +991,7 @@ end;
 
 procedure TConfigForm.AddRetailMarkups;
 begin
+  tshClients.PageIndex := 1;
   frameEditRetailMarkups := TframeEditVitallyImportantMarkups
     .CreateFrame(Self, doiRetailMargins, DM.LoadRetailMargins);
 
@@ -1428,6 +1434,23 @@ begin
     + 'where '
     + ' FirmCode = :FirmCode';
   adsWaybillFolders.Open;
+end;
+
+procedure TConfigForm.AddNDS18Markups;
+begin
+  tsNDS18Markups := TTabSheet.Create(Self);
+  tsNDS18Markups.PageControl := PageControl;
+  tsNDS18Markups.PageIndex := tshClients.PageIndex + 1;
+  tsNDS18Markups.Caption := 'Наценки товара с 18% НДС';
+
+  frameEditNDS18Markups := TframeEditVitallyImportantMarkups
+    .CreateFrame(Self, doiRetailMargins, DM.LoadRetailMargins, 'frameEditRetailNDS18Markups');
+
+  tsNDS18Markups.Constraints.MinHeight := frameEditNDS18Markups.Height;
+  tsNDS18Markups.Constraints.MinWidth := frameEditNDS18Markups.Width;
+
+  frameEditNDS18Markups.Parent := tsNDS18Markups;
+  frameEditNDS18Markups.Align := alClient;
 end;
 
 end.
