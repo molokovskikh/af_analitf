@@ -962,6 +962,7 @@ begin
       'Отправить их сейчас?', MB_ICONQUESTION or MB_YESNO) = IDYES then
       RunExchange([ eaSendOrders]);
   end;
+  DM.StopInstallNet;
 end;
 
 procedure TMainForm.actFindExecute(Sender: TObject);
@@ -2124,6 +2125,9 @@ try
 
     tmrNeedUpdateCheck.Enabled := True;
   end;
+
+  //Если все хорошо, то запускаем нитку установки
+  DM.StartInstallNet;
 
 finally
   UpdateToolBar;

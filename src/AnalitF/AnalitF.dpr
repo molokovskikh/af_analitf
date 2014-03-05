@@ -174,7 +174,8 @@ uses
   U_AwaitedProductsForm in 'Views\U_AwaitedProductsForm.pas' {AwaitedProductsForm},
   U_AddAwaitedProducts in 'Views\U_AddAwaitedProducts.pas' {AddAwaitedProducts},
   U_CheckTCPThread in 'Helpers\U_CheckTCPThread.pas',
-  U_frameRejectedPosition in 'Views\U_frameRejectedPosition.pas' {frameRejectedPosition: TFrame};
+  U_frameRejectedPosition in 'Views\U_frameRejectedPosition.pas' {frameRejectedPosition: TFrame},
+  U_InstallNetThread in 'Helpers\U_InstallNetThread.pas';
 
 {$R *.RES}
 {$R Progress.RES}

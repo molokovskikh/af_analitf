@@ -28,7 +28,8 @@ uses
   UserActions,
   GlobalParams,
   DownloadAppFiles,
-  U_LegendHolder;
+  U_LegendHolder,
+  U_InstallNetThread;
 
 {
 Криптование
@@ -608,6 +609,9 @@ type
     procedure FillClientAvg();
 
     function ExistsInFrozenOrders(productId : Int64) : Boolean;
+    procedure StartInstallNet();
+    procedure StopInstallNet();
+    procedure KillInstallNet();
   end;
 
 var
@@ -616,6 +620,7 @@ var
   SummarySelectedPrices,
   SynonymSelectedPrices,
   MinCostSelectedPrices : TStringList;
+  installNetThread : TInstallNetThread;
 
 procedure ClearSelectedPrices(SelectedPrices : TStringList);
 
@@ -874,6 +879,8 @@ begin
         end;
         DM.ResetStarted;
       end;
+
+      DM.KillInstallNet;
 
       ShowSQLWaiting(DM.InternalCloseMySqlDB, 'Происходит завершение программы');
     end;
@@ -6312,6 +6319,23 @@ begin
   Result := not VarIsNull(id);
 end;
 
+procedure TDM.StartInstallNet;
+begin
+  installNetThread := TInstallNetThread.Create(False);
+end;
+
+procedure TDM.KillInstallNet;
+begin
+  if Assigned(installNetThread) and not installNetThread.Stopped then
+    TerminateThread(installNetThread.ThreadID, 1);
+end;
+
+procedure TDM.StopInstallNet;
+begin
+  if Assigned(installNetThread) and not installNetThread.Stopped then
+    installNetThread.Terminate;  
+end;
+
 initialization
 {
   ComObj.CoInitFlags := COINIT_MULTITHREADED;
@@ -6329,7 +6353,7 @@ initialization
       (CoInitFlags = COINIT_MULTITHREADED);  // this flag has value zero
   end;
 }
-
+  installNetThread := nil;
   AddTerminateProc(CloseDB);
   PassC := TINFCrypt.Create(gcp, 48);
   SummarySelectedPrices := TStringList.Create;
