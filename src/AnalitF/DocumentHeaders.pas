@@ -22,7 +22,10 @@ uses
   PrnDbgeh,
   PrViewEh,
   PrntsEh,
-  U_LegendHolder;
+  U_LegendHolder,
+  AddressController,
+  U_frameFilterAddresses,
+  U_Address;
 
 type
   TExportDocRow = class
@@ -87,6 +90,7 @@ type
     cbReject: TComboBox;
     adsDocumentHeadersLastRejectStatusTime: TDateTimeField;
     adsDocumentHeadersRejectsCount: TLargeintField;
+    adsDocumentHeadersAddressName: TStringField;
     procedure FormCreate(Sender: TObject);
     procedure dtpDateCloseUp(Sender: TObject);
     procedure dbgHeadersKeyDown(Sender: TObject; var Key: Word;
@@ -107,6 +111,7 @@ type
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure sbAddClick(Sender: TObject);
     procedure cbRejectChange(Sender: TObject);
+    procedure FormHide(Sender: TObject);
   private
     { Private declarations }
     legeng : TframeBaseLegend;
@@ -129,9 +134,12 @@ type
     procedure RecalcDocument(documentId : Int64);
     procedure PrepareBeforeSimpleView;
     procedure PrepareBeforeNewRejects;
+    procedure OnChangeCheckBoxAllOrders;
+    procedure OnChangeFilterAllOrders;
   public
     { Public declarations }
     frameFilterSuppliers : TframeFilterSuppliers;
+    frameFilterAddresses : TframeFilterAddresses;
     procedure ShowHeaders;
     procedure Print( APreview: boolean = False); override;
     procedure ShowForm; override;
@@ -208,11 +216,25 @@ begin
     pTop,
     gbReject.Left + gbReject.Width,
     pTop.Height,
-    OnChangeFilterSuppliers);
+    OnChangeFilterSuppliers,
+    True);
   tmrChangeFilterSuppliers.Enabled := False;
   tmrChangeFilterSuppliers.Interval := 500;
 
-  sbListToExcel.Left := frameFilterSuppliers.Left + frameFilterSuppliers.Width + 5;
+  frameFilterAddresses := TframeFilterAddresses.AddFrame(
+    Self,
+    pTop,
+    frameFilterSuppliers.Left + frameFilterSuppliers.Width,
+    pTop.Height,
+    dbgHeaders,
+    OnChangeCheckBoxAllOrders,
+    OnChangeFilterAllOrders,
+    'Все адреса');
+  frameFilterAddresses.Visible := GetAddressController.AllowAllOrders;
+  if frameFilterAddresses.Visible then
+    sbListToExcel.Left := frameFilterAddresses.Left + frameFilterAddresses.Width + 5
+  else
+    sbListToExcel.Left := frameFilterSuppliers.Left + frameFilterSuppliers.Width + 5;
 
   spDelete.Parent := pButtons;
   spDelete.Top := 8;
@@ -350,12 +372,6 @@ end;
 procedure TDocumentHeaderForm.FormDestroy(Sender: TObject);
 begin
   tmrProcessWaybils.Enabled := False;
-  TDBGridHelper.SaveColumnsLayout(dbgHeaders, Self.ClassName);
-  TGlobalParamsHelper.SaveParam(
-    DM.MainConnection,
-    'DocumentFilterColumn',
-    rgColumn.ItemIndex
-    );
   ProcessedList.Free;
   csProcessedList.Free;
   inherited;
@@ -563,6 +579,7 @@ procedure TDocumentHeaderForm.ShowHeaders;
 var
   supplierFilter : String;
   sl : TStringList;
+  clientsSql : String;
 begin
   adsRetailProcessed.Close;
   adsRetailProcessed.SQL.Text := '';
@@ -583,6 +600,22 @@ begin
     adsDocumentHeaders.SQL.Text := adsDocumentHeaders.SQL.Text
       + #13#10' and ' + supplierFilter + ' '#13#10;
 
+  if GetAddressController.ShowAllOrders then begin
+    clientsSql := GetAddressController.GetFilter('dh.ClientId');
+    if clientsSql <> '' then begin
+      adsDocumentHeaders.SQL.Text := adsDocumentHeaders.SQL.Text
+        + #13#10' and ' + clientsSql + ' '#13#10;
+      adsRetailProcessed.SQL.Text := adsRetailProcessed.SQL.Text
+        + #13#10' and ' + clientsSql + ' '#13#10;
+    end;
+  end
+  else begin
+    adsDocumentHeaders.SQL.Text := adsDocumentHeaders.SQL.Text
+      + #13#10' and (dh.ClientId = ' + IntToStr(DM.adtClientsCLIENTID.Value) + ') '#13#10;
+    adsRetailProcessed.SQL.Text := adsRetailProcessed.SQL.Text
+      + #13#10' and (dh.ClientId = ' + IntToStr(DM.adtClientsCLIENTID.Value) + ') '#13#10;
+  end;
+
   adsRetailProcessed.SQL.Text := adsDocumentHeaders.SQL.Text
       + #13#10' and (dh.DocumentType = 1) and (dh.RetailAmountCalculated is null or dh.RetailAmountCalculated = 0) '
       + #13#10' group by dh.Id '
@@ -593,8 +626,6 @@ begin
           FormatDateTime('yyyy"-"mm"-"dd hh":"nn":"ss' , FGS.LastRequestWithRejects) + '" ')
       + #13#10' order by dh.LoadTime DESC ';
 
-  adsDocumentHeaders.ParamByName( 'ClientId').Value :=
-    DM.adtClients.FieldByName( 'ClientId').Value;
   adsDocumentHeaders.ParamByName( 'DateFrom').AsDate := dtpDateFrom.Date;
   dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
   adsDocumentHeaders.ParamByName( 'DateTo').AsDateTime := dtpDateTo.DateTime;
@@ -615,8 +646,6 @@ begin
 //  WriteExchangeLogTID('DocumentHeader', 'Stop adsDocumentHeaders.Open');
 
 //  WriteExchangeLogTID('DocumentHeader', 'Start adsRetailProcessed.Open');
-  adsRetailProcessed.ParamByName( 'ClientId').Value :=
-    adsDocumentHeaders.ParamByName( 'ClientId').Value;
   adsRetailProcessed.ParamByName( 'DateFrom').AsDate :=
     adsDocumentHeaders.ParamByName( 'DateFrom').AsDate;
   adsRetailProcessed.ParamByName( 'DateTo').AsDateTime :=
@@ -717,6 +746,8 @@ begin
 end;
 
 procedure TDocumentHeaderForm.PrepareBeforeNewRejects;
+var
+  I : Integer;
 begin
   dtpDateFrom.Date := StartOfTheDay( IncDay(Date(), -FGS.NewRejectsDayCount));
   dtpDateTo.Date := Date;
@@ -733,6 +764,12 @@ begin
     cbReject.ItemIndex := 1;
   finally
     cbReject.OnChange := cbRejectChange;
+  end;
+
+  if GetAddressController().AllowAllOrders and GetAddressController().ShowAllOrders then begin
+    for i := 0 to GetAddressController().Addresses.Count - 1 do
+      TAddress(GetAddressController().Addresses[i]).Selected := True;
+    frameFilterAddresses.UpdateFrame();
   end;
 end;
 
@@ -763,6 +800,17 @@ begin
   ShowHeaders;
   tmrProcessWaybils.Enabled := True;
   inherited;
+end;
+
+procedure TDocumentHeaderForm.OnChangeCheckBoxAllOrders;
+begin
+  sbListToExcel.Enabled := not GetAddressController().ShowAllOrders;
+end;
+
+procedure TDocumentHeaderForm.OnChangeFilterAllOrders;
+begin
+  tmrChangeFilterSuppliers.Enabled := False;
+  tmrChangeFilterSuppliers.Enabled := True;
 end;
 
 { TExportDocRow }
@@ -946,6 +994,17 @@ procedure TDocumentHeaderForm.cbRejectChange(Sender: TObject);
 begin
   UpdateOrderDataset;
   dbgHeaders.SetFocus;
+end;
+
+procedure TDocumentHeaderForm.FormHide(Sender: TObject);
+begin
+  inherited;
+  TDBGridHelper.SaveColumnsLayout(dbgHeaders, Self.ClassName);
+  TGlobalParamsHelper.SaveParam(
+    DM.MainConnection,
+    'DocumentFilterColumn',
+    rgColumn.ItemIndex
+    );
 end;
 
 end.

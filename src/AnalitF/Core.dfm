@@ -653,6 +653,7 @@ object CoreForm: TCoreForm
       '    Core.Code,'
       '    Core.CodeCr,'
       '    Core.Period,'
+      '    Core.Exp,'
       '    Core.Volume,'
       '    Core.Note,'
       '    Core.Cost as RealCost,'
@@ -778,6 +779,7 @@ object CoreForm: TCoreForm
       '    Core.Code,'
       '    Core.CodeCr,'
       '    Core.Period,'
+      '    Core.Exp,'
       '    Core.Volume,'
       '    Core.Note,'
       '    Core.Cost as RealCost,'
@@ -1171,6 +1173,9 @@ object CoreForm: TCoreForm
     object adsCoreMarkup: TFloatField
       FieldName = 'Markup'
     end
+    object adsCoreExp: TDateField
+      FieldName = 'Exp'
+    end
   end
   object adsRegions: TMyQuery
     Connection = DM.MyConnection
@@ -1385,6 +1390,7 @@ object CoreForm: TCoreForm
       '    Core.Code,'
       '    Core.CodeCr,'
       '    Core.Period,'
+      '    Core.Exp,'
       '    Core.Volume,'
       '    Core.Note,'
       '    Core.Cost as RealCost,'

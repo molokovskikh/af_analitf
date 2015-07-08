@@ -115,6 +115,7 @@ type
     adsCoreCode: TStringField;
     adsCoreCodeCr: TStringField;
     adsCorePeriod: TStringField;
+    adsCoreExp: TDateField;
     adsCoreVolume: TStringField;
     adsCoreNote: TStringField;
     adsCoreCost: TFloatField;
@@ -165,6 +166,7 @@ type
 
     framePosition : TframePosition;
     frameLegend : TframeLegend;
+    procedure Print( APreview: boolean = False); override;
   end;
 
 procedure ShowAwaitedProducts;
@@ -315,7 +317,7 @@ begin
   TDBGridHelper.AddColumn(dbgCore, 'Note', 'Примечание', 30);
   column := TDBGridHelper.AddColumn(dbgCore, 'Doc', 'Документ');
   column.Visible := False;
-  column := TDBGridHelper.AddColumn(dbgCore, 'Period', 'Срок годн.', 85);
+  column := TDBGridHelper.AddColumn(dbgCore, 'Exp', 'Срок годн.', 85);
   column.Alignment := taCenter;
   TDBGridHelper.AddColumn(dbgCore, 'PriceName', 'Прайс-лист', 85);
   column := TDBGridHelper.AddColumn(dbgCore, 'RegionName', 'Регион', 72);
@@ -376,6 +378,7 @@ begin
   adsCoreCode := TDataSetHelper.AddStringField(adsCore, 'Code');
   adsCoreCodeCr := TDataSetHelper.AddStringField(adsCore, 'CodeCr');
   adsCorePeriod := TDataSetHelper.AddStringField(adsCore, 'Period');
+  adsCoreExp := TDataSetHelper.AddDateField(adsCore, 'Exp');
   adsCoreVolume := TDataSetHelper.AddStringField(adsCore, 'Volume');
   adsCoreNote := TDataSetHelper.AddStringField(adsCore, 'Note', 100);
   adsCoreCost := TDataSetHelper.AddFloatField(adsCore, 'Cost');
@@ -571,7 +574,7 @@ end;
 
 procedure TAwaitedProductsForm.dbgAwaitedProductsEnter(Sender: TObject);
 begin
-  PrintEnabled := False;
+  PrintEnabled := True;
 end;
 
 procedure TAwaitedProductsForm.dbgAwaitedProductsExit(Sender: TObject);
@@ -622,11 +625,11 @@ begin
     if adsCore.FieldByName('vitallyimportant').AsBoolean then
       AFont.Color := LegendHolder.Legends[lnVitallyImportant];
     //если уцененный товар, изменяем цвет
-    if adsCore.FieldByName('Junk').AsBoolean and (AnsiIndexText(Column.Field.FieldName, ['Period', 'Cost']) > -1)
+    if adsCore.FieldByName('Junk').AsBoolean and (AnsiIndexText(Column.FieldName, ['Exp', 'Cost']) > -1)
     then
       Background := LegendHolder.Legends[lnJunk];
     //ожидаемый товар выделяем зеленым
-    if adsCore.FieldByName('Await').AsBoolean and AnsiSameText(Column.Field.FieldName, 'SynonymName') then
+    if adsCore.FieldByName('Await').AsBoolean and AnsiSameText(Column.FieldName, 'SynonymName') then
       Background := LegendHolder.Legends[lnAwait];
   end;
 end;
@@ -677,6 +680,12 @@ begin
   CanInput := (not adsCore.IsEmpty) and ( adsCoreSynonymCode.AsInteger >= 0) and
     (( adsCoreRegionCode.AsLargeInt and DM.adtClientsREQMASK.AsLargeInt) =
       adsCoreRegionCode.AsLargeInt);
+end;
+
+procedure TAwaitedProductsForm.Print(APreview: boolean);
+begin
+  if dbgAwaitedProducts.Focused and adsAwaitedProducts.Active then
+    DM.ShowFastReport('Awaited.frf', adsAwaitedProducts, APreview);
 end;
 
 end.

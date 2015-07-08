@@ -20,7 +20,8 @@ uses
   UserActions,
   WaybillCalculation,
   U_LegendHolder,
-  U_WaybillGridFactory;
+  U_WaybillGridFactory,
+  U_frameRejectedPosition;
 
 const
   NDSNullValue = 'нет значений';
@@ -339,6 +340,7 @@ type
     procedure UpdateGridOnLegend(Sender : TObject);
   public
     { Public declarations }
+    frameRejectedPosition : TframeRejectedPosition;
     procedure ShowForm(DocumentId: Int64; ParentForm : TChildForm); overload; //reintroduce;
     procedure ForceRecalcDocument(DocumentId: Int64);
   end;
@@ -390,12 +392,16 @@ procedure TDocumentBodiesForm.ShowForm(DocumentId: Int64;
 begin
   Self.OnResize := nil;
   FDocumentId := DocumentId;
+  frameRejectedPosition.HideReject();
   SetParams;
   inherited ShowForm;
   if adsDocumentHeadersDocumentType.Value = 1 then begin
     SetButtonPositions;
     UpdateSelectState();
     Self.OnResize := OnResizeForm;
+    //это хак, чтобы панель с забракованной позицией снова отрисовалась
+    if (not adsDocumentBodiesRejectId.IsNull) then
+      adsDocumentBodiesAfterScroll(adsDocumentBodies);
   end;
 end;
 
@@ -760,6 +766,11 @@ begin
 
   CreateLegenPanel();
 
+  frameRejectedPosition := TframeRejectedPosition.AddFrame(
+    Self,
+    pGrid,
+    dbgDocumentBodies);
+    
   SetOrderGrid();
 
   inherited;
@@ -816,13 +827,13 @@ begin
       Background := LegendHolder.Legends[lnUnrejectedWaybillPosition];
 
   if (retailMarkupField.Value < 0) then
-    if AnsiMatchText(Column.Field.FieldName,
+    if AnsiMatchText(Column.FieldName,
         ['RetailMarkup', 'RetailPrice', 'RetailSumm', 'RealMarkup'])
     then
       Background := LegendHolder.Legends[lnRetailPrice];
 
   if (retailMarkupField.Value > maxRetailMarkupField.Value)
-     and AnsiMatchText(Column.Field.FieldName, ['RetailMarkup', 'MaxRetailMarkup'])
+     and AnsiMatchText(Column.FieldName, ['RetailMarkup', 'MaxRetailMarkup'])
   then
     Background := LegendHolder.Legends[lnRetailMarkup];
 
@@ -2497,6 +2508,16 @@ procedure TDocumentBodiesForm.adsDocumentBodiesAfterScroll(
   DataSet: TDataSet);
 begin
   UpdateMatchOrderTimer;
+  if dbgDocumentBodies.Visible and (adsDocumentHeadersDocumentType.Value = 1) then
+    if adsDocumentBodies.Active and not adsDocumentBodies.IsEmpty
+    then begin
+      if not adsDocumentBodiesRejectId.IsNull then
+        frameRejectedPosition.ShowReject(adsDocumentBodiesRejectId.Value)
+      else
+        frameRejectedPosition.HideReject();
+    end
+    else
+      frameRejectedPosition.HideReject();
 end;
 
 procedure TDocumentBodiesForm.adsDocumentBodiesAfterOpen(

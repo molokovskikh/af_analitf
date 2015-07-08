@@ -642,6 +642,8 @@ begin
     HTTPName,
     HTTPPass,
     OnConnectError,
+    DM.SerBeg,
+    DM.SerEnd,
     ExchangeForm.HTTP);
 end;
 
@@ -1834,7 +1836,7 @@ begin
       ' Code, CodeCr, Unit, Volume, Junk, Await, QUANTITY, Note, Period, Doc, ' +
       ' RegistryCost, VitallyImportant, REQUESTRATIO, CryptCost, SERVERCOREID, ' +
       ' ORDERCOST, MINORDERCOUNT, SupplierPriceMarkup, ProducerCost, NDS, RetailVitallyImportant, BuyingMatrixType, ' +
-      ' EAN13, CodeOKP, Series );';
+      ' EAN13, CodeOKP, Series, Exp );';
 {$else}
     SQL.Text :=
       Copy(coreTestInsertSQl, 1, LENGTH(coreTestInsertSQl) - 1) +
@@ -1842,7 +1844,7 @@ begin
       ' Code, CodeCr, Unit, Volume, Junk, Await, QUANTITY, Note, Period, Doc, ' +
       ' RegistryCost, VitallyImportant, REQUESTRATIO, Cost, SERVERCOREID, ' +
       ' ORDERCOST, MINORDERCOUNT, SupplierPriceMarkup, ProducerCost, NDS, RetailVitallyImportant, BuyingMatrixType, ' +
-      ' EAN13, CodeOKP, Series );';
+      ' EAN13, CodeOKP, Series, Exp );';
 {$endif}
 
     InternalExecute;
@@ -3567,7 +3569,7 @@ begin
       + ' (Id, ORDERID, CLIENTID, PRODUCTID, CODEFIRMCR, SYNONYMCODE, SYNONYMFIRMCRCODE, '
       + '  CODE, CODECr, Await, Junk, ORDERCOUNT, Price, RealPrice, REQUESTRATIO, ORDERCOST, MINORDERCOUNT, '
       + '  SupplierPriceMarkup, RetailMarkup, Unit, Volume, Note, Period, Doc, '
-      + '  VitallyImportant, CoreQuantity, RegistryCost, ProducerCost, NDS, RetailCost, ServerOrderListId);';
+      + '  VitallyImportant, CoreQuantity, RegistryCost, ProducerCost, NDS, RetailCost, ServerOrderListId) set Exp = Period;';
     InternalExecute;
     
     DM.adcUpdate.SQL.Text := ''
@@ -3787,6 +3789,8 @@ begin
     try
       ImportData;
       ProcessFatalMySqlError := False;
+      if FileExists(ExePath + SDirIn + '\net.txt') then
+        DM.StartInstallNet;
     except
       on EMyDb : EMyError do begin
         WriteExchangeLog('Exchange', 'Ошибка при импорте: ' + ExceptionToString(EMyDb));

@@ -5,22 +5,23 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
   Caption = #1044#1086#1082#1091#1084#1077#1085#1090#1099
   ClientWidth = 882
   OnDestroy = FormDestroy
+  OnHide = FormHide
   PixelsPerInch = 96
   TextHeight = 13
   object pTop: TPanel [0]
     Left = 0
     Top = 0
     Width = 882
-    Height = 45
+    Height = 53
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
     DesignSize = (
       882
-      45)
+      53)
     object lBefore: TLabel
-      Left = 139
-      Top = 16
+      Left = 131
+      Top = 6
       Width = 60
       Height = 13
       Caption = #1079#1072' '#1087#1077#1088#1080#1086#1076' '#1089
@@ -32,8 +33,8 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       ParentFont = False
     end
     object lInterval: TLabel
-      Left = 292
-      Top = 16
+      Left = 179
+      Top = 29
       Width = 12
       Height = 13
       Caption = #1087#1086
@@ -45,16 +46,16 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       ParentFont = False
     end
     object Bevel1: TBevel
-      Left = 137
+      Left = 129
       Top = 0
-      Width = 745
-      Height = 45
+      Width = 753
+      Height = 53
       Align = alClient
       Shape = bsBottomLine
     end
     object spDelete: TSpeedButton
-      Left = 398
-      Top = 9
+      Left = 280
+      Top = 11
       Width = 97
       Height = 27
       Caption = #1059#1076#1072#1083#1080#1090#1100
@@ -95,8 +96,8 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       OnClick = sbAddClick
     end
     object dtpDateFrom: TDateTimePicker
-      Left = 204
-      Top = 13
+      Left = 193
+      Top = 2
       Width = 81
       Height = 21
       Date = 36526.631636412040000000
@@ -111,8 +112,8 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       OnCloseUp = dtpDateCloseUp
     end
     object dtpDateTo: TDateTimePicker
-      Left = 311
-      Top = 13
+      Left = 193
+      Top = 26
       Width = 81
       Height = 21
       Date = 0.631934409720997800
@@ -123,8 +124,8 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     object rgColumn: TRadioGroup
       Left = 0
       Top = 0
-      Width = 137
-      Height = 45
+      Width = 129
+      Height = 53
       Align = alLeft
       Caption = ' '#1060#1080#1083#1100#1090#1088#1086#1074#1072#1090#1100' '
       ItemIndex = 0
@@ -137,14 +138,14 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     object gbReject: TGroupBox
       Left = 424
       Top = 0
-      Width = 169
+      Width = 163
       Height = 45
       Caption = ' '#1047#1072#1073#1088#1072#1082#1086#1074#1082#1072' '
       TabOrder = 3
       object cbReject: TComboBox
         Left = 9
         Top = 16
-        Width = 152
+        Width = 149
         Height = 21
         Style = csDropDownList
         ItemHeight = 13
@@ -160,9 +161,9 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
   end
   object pGrid: TPanel [1]
     Left = 0
-    Top = 45
+    Top = 53
     Width = 882
-    Height = 404
+    Height = 396
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
@@ -171,7 +172,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       Left = 0
       Top = 0
       Width = 882
-      Height = 404
+      Height = 396
       Align = alClient
       AllowedOperations = [alopUpdateEh]
       AllowedSelections = [gstRecordBookmarks, gstRectangle, gstAll]
@@ -297,7 +298,10 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       'sum(db.Amount) as TotalSumm,'
       'sum(db.RetailAmount) as TotalRetailSumm,'
       'count(db.RejectId) as RejectsCount,'
-      'max(db.LastRejectStatusTime) as LastRejectStatusTime'
+      'max(db.LastRejectStatusTime) as LastRejectStatusTime,'
+      
+        'if(c.ClientId is not null, c.Name, '#39#1040#1076#1088#1077#1089' '#1086#1090#1082#1083#1102#1095#1077#1085'/'#1091#1076#1072#1083#1077#1085' '#1080#1079' '#1089#1080#1089 +
+        #1090#1077#1084#1099#39') as AddressName'
       'from'
       '  DocumentHeaders dh,'
       '  providers p,'
@@ -382,6 +386,10 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     object adsDocumentHeadersRejectsCount: TLargeintField
       FieldName = 'RejectsCount'
     end
+    object adsDocumentHeadersAddressName: TStringField
+      FieldName = 'AddressName'
+      Size = 255
+    end
   end
   object dsDocumentHeaders: TDataSource
     DataSet = adsDocumentHeaders
@@ -389,7 +397,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     Top = 111
   end
   object shDocumentHeaders: TStrHolder
-    Capacity = 28
+    Capacity = 44
     Macros = <>
     Left = 304
     Top = 135
@@ -423,9 +431,16 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       '636f756e742864622e52656a65637449642920'
       '202061732052656a65637473436f756e742c'
       '6d61782864622e4c61737452656a65637453746174757354696d652920617320'
-      '20204c61737452656a65637453746174757354696d65'
+      '20204c61737452656a65637453746174757354696d652c'
+      
+        '696628632e436c69656e744964206973206e6f74206e756c6c2c20632e4e616d' +
+        '652c2027c0e4f0e5f120eef2eaebfef7e5ed2ff3e4e0ebe5ed20e8e720f1e8f1' +
+        'f2e5ecfb272920617320416464726573734e616d65'
       '66726f6d'
       '2020446f63756d656e7448656164657273206468'
+      
+        '20206c656674206a6f696e20636c69656e74732063206f6e20632e436c69656e' +
+        '744964203d2064682e436c69656e744964'
       
         '20206c656674206a6f696e2070726f7669646572732070206f6e20702e466972' +
         '6d436f6465203d2064682e4669726d436f646520'
@@ -433,7 +448,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
         '20206c656674206a6f696e20446f63756d656e74426f64696573206462206f6e' +
         '2064622e446f63756d656e744964203d2064682e4964'
       '7768657265'
-      '202020202864682e436c69656e744964203d203a436c69656e74496429')
+      '2020202831203d203129')
   end
   object tmrChangeFilterSuppliers: TTimer
     Enabled = False

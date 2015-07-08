@@ -70,11 +70,13 @@ type
 
     pCheckBox : TPanel;
     cbUseProducerCostWithNDS : TCheckBox;
+    cbApply : TCheckBox;
 
     constructor CreateFrame(
       AOwner: TComponent;
       TableId : TDatabaseObjectId;
-      LoadMarkups : TThreadMethod); overload;
+      LoadMarkups : TThreadMethod;
+      AComponentName : String = ''); overload;
     destructor Destroy(); override;
     procedure SaveVitallyImportantMarkups;
     function ProcessCloseQuery(var CanClose: Boolean) : Boolean;
@@ -209,18 +211,22 @@ end;
 constructor TframeEditVitallyImportantMarkups.CreateFrame(
   AOwner: TComponent;
   TableId : TDatabaseObjectId;
-  LoadMarkups : TThreadMethod);
+  LoadMarkups : TThreadMethod;
+  AComponentName : String = '');
 begin
+  inherited Create(AOwner);
+
   FTableId := TableId;
   VitallyEdit := TableId = doiVitallyImportantMarkups;
   FLoadMarkups := LoadMarkups;
   FMarkups := TObjectList.Create(True);
-  Self.Name := 'frameEdit' + DatabaseController.GetById(TableId).Name;
+  if AComponentName <> '' then
+    Self.Name := AComponentName
+  else
+    Self.Name := 'frameEditMargins' + DatabaseController.GetById(TableId).Name;
   FParams := TVitallyImportantMarkupsParams.Create(DM.MainConnection);
 
-  inherited Create(AOwner);
   MarkupsChanges := False;
-
 
   CreateNonVisibleComponents;
   CreateVisibleComponents;
@@ -505,11 +511,11 @@ begin
   //  pClient.Height := lBreakingExistsInfo.Top + lBreakingExistsInfo.Height + 10;
   //  pEditButtons.Height := pClient.Height;
 
-  pClient.Height := pClient.Height + 40;
+  pClient.Height := pClient.Height + 70;
 
   pCheckBox := TPanel.Create(Self);
   pCheckBox.Parent := pClient;
-  pCheckBox.Height := 40;
+  pCheckBox.Height := 70;
   pCheckBox.Align := alBottom;
   pCheckBox.Caption := '';
   pCheckBox.BevelOuter := bvNone;
@@ -521,6 +527,13 @@ begin
   cbUseProducerCostWithNDS.Caption := 'Использовать цену завода с НДС при определении ценового диапазона';
   cbUseProducerCostWithNDS.Checked := FParams.UseProducerCostWithNDS;
   cbUseProducerCostWithNDS.Width := lLeftLessRightColor.Canvas.TextWidth(cbUseProducerCostWithNDS.Caption) + 30;
+
+  cbApply := TCheckBox.Create(Self);
+  cbApply.Parent := pCheckBox;
+  cbApply.Left := 5;
+  cbApply.Top := cbUseProducerCostWithNDS.Top + cbUseProducerCostWithNDS.Height + 5;
+  cbApply.Caption := 'Применить ко всем Адресам(точкам) доставки';
+  cbApply.Width := lLeftLessRightColor.Canvas.TextWidth(cbApply.Caption) + 30;
 end;
 
 end.

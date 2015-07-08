@@ -536,6 +536,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.Code,'
       '    Core.CodeCr,'
       '    Core.Period,'
+      '    Core.Exp,'
       '    Core.Volume,'
       '    Core.Note,'
       '    Core.Cost as RealCost,'
@@ -660,6 +661,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.Code,'
       '    Core.CodeCr,'
       '    Core.Period,'
+      '    Core.Exp,'
       '    Core.Volume,'
       '    Core.Note,'
       '    Core.Cost as RealCost,'
@@ -1075,6 +1077,9 @@ inherited SynonymSearchForm: TSynonymSearchForm
       FieldName = 'OrdersComment'
       Size = 255
     end
+    object adsCoreExp: TDateField
+      FieldName = 'Exp'
+    end
   end
   object adsPreviosOrders: TMyQuery
     Connection = DM.MyConnection
@@ -1255,6 +1260,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.Code,'
       '    Core.CodeCr,'
       '    Core.Period,'
+      '    Core.Exp,'
       '    Core.Volume,'
       '    Core.Note,'
       '    Core.Cost as RealCost,'
@@ -1425,6 +1431,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    SynonymSearch.Code,'
       '    SynonymSearch.CodeCr,'
       '    SynonymSearch.Period,'
+      '    SynonymSearch.Exp,'
       '    SynonymSearch.Volume,'
       '    SynonymSearch.Note,'
       '    SynonymSearch.RealCost,'
@@ -1529,6 +1536,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    SynonymSearch.Code,'
       '    SynonymSearch.CodeCr,'
       '    SynonymSearch.Period,'
+      '    SynonymSearch.Exp,'
       '    SynonymSearch.Volume,'
       '    SynonymSearch.Note,'
       '    SynonymSearch.RealCost,'
@@ -1653,6 +1661,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.Code,'
       '    Core.CodeCr,'
       '    Core.Period,'
+      '    Core.Exp,'
       '    Core.Volume,'
       '    Core.Note,'
       '    Core.Cost as RealCost,'

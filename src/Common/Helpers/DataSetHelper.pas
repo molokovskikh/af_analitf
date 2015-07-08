@@ -17,6 +17,7 @@ type
     class function AddBooleanField(dataSet : TDataSet; FieldName : String) : TBooleanField;
     class function AddSmallintField(dataSet : TDataSet; FieldName : String) : TSmallintField;
     class function AddDateTimeField(dataSet : TDataSet; FieldName : String) : TDateTimeField;
+    class function AddDateField(dataSet : TDataSet; FieldName : String) : TDateField;
     class function AddCalculatedFloatField(dataSet : TDataSet; FieldName : String) : TFloatField;
     class function AddCalculatedCurrencyField(dataSet : TDataSet; FieldName : String) : TCurrencyField;
     class procedure SetDisplayFormat(dataSet : TDataSet; fieldNames : array of string);
@@ -137,6 +138,14 @@ class function TDataSetHelper.AddStringField(dataSet: TDataSet;
 begin
   Result := AddStringField(dataSet, FieldName);
   Result.Size := Size;
+end;
+
+class function TDataSetHelper.AddDateField(dataSet: TDataSet;
+  FieldName: String): TDateField;
+begin
+  Result := TDateField.Create(dataSet);
+  Result.fieldname := FieldName;
+  Result.Dataset := dataSet;
 end;
 
 end.

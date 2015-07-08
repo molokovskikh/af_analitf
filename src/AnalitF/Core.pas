@@ -157,6 +157,7 @@ type
     lDiveder: TLabel;
     dbtOrderCountAvg: TDBText;
     adsAvgOrdersOrderCountAvg: TFloatField;
+    adsCoreExp: TDateField;
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);

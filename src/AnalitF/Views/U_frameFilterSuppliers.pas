@@ -21,6 +21,7 @@ type
     procedure FrameResize(Sender: TObject);
   private
     { Private declarations }
+    FVertical : Boolean;
     FCanvas : TCanvas;
     FOnChangeFilter : TThreadMethod;
 
@@ -35,21 +36,24 @@ type
     procedure UnselectedAllClick(Sender: TObject);
     procedure ChangeSelectSupplierClick(Sender: TObject);
 
+    procedure InternalCreate();
   public
     { Public declarations }
     pmSelectedSuppliers: TPopupMenu;
-    
+
     gbSuppliers: TGroupBox;
     sbSuppliers : TSpeedButton;
     lFilter : TLabel;
 
     constructor Create(AOwner: TComponent); override;
+    constructor CreateVertical(AOwner: TComponent; Vertical : Boolean);
     class function AddFrame(
       Owner: TComponent;
       Parent: TWinControl;
       ALeft,
       AHeight : Integer;
-      AOnChangeFilter : TThreadMethod) : TframeFilterSuppliers;
+      AOnChangeFilter : TThreadMethod;
+      AVertical : Boolean = False) : TframeFilterSuppliers;
 
     procedure PrepareFrame;
     procedure ProcessChangeFilter;
@@ -63,9 +67,10 @@ implementation
 
 class function TframeFilterSuppliers.AddFrame(Owner: TComponent;
   Parent: TWinControl; ALeft, AHeight: Integer; 
-  AOnChangeFilter: TThreadMethod): TframeFilterSuppliers;
+  AOnChangeFilter: TThreadMethod;
+  AVertical : Boolean = False): TframeFilterSuppliers;
 begin
-  Result := TframeFilterSuppliers.Create(Owner);
+  Result := TframeFilterSuppliers.CreateVertical(Owner, AVertical);
   Result.Name := '';
   Result.Parent := Parent;
   Result.Left := ALeft;
@@ -100,14 +105,10 @@ end;
 
 constructor TframeFilterSuppliers.Create(AOwner: TComponent);
 begin
+  FVertical := False;
   inherited;
-  FCanvas := TControlCanvas.Create;
-  TControlCanvas(FCanvas).Control := Self;
 
-  CreateVisualComponent;
-
-  gbSuppliers.ControlStyle := gbSuppliers.ControlStyle - [csParentBackground] + [csOpaque];
-  Self.ControlStyle := Self.ControlStyle - [csParentBackground] + [csOpaque];
+  InternalCreate();
 end;
 
 procedure TframeFilterSuppliers.CreateMenu;
@@ -172,7 +173,10 @@ begin
   lFilter := TLabel.Create(Self);
   lFilter.Parent := gbSuppliers;
   lFilter.Caption := '(Фильтр применен)';
-  lFilter.Left := sbSuppliers.Left + sbSuppliers.Width + 5;
+  if FVertical then
+    lFilter.Left := sbSuppliers.Left
+  else
+    lFilter.Left := sbSuppliers.Left + sbSuppliers.Width + 5;
 end;
 
 procedure TframeFilterSuppliers.PrepareFrame;
@@ -189,11 +193,25 @@ begin
 end;
 
 procedure TframeFilterSuppliers.ProcessResize;
+var
+  allHeight : Integer;
+  sbTop : Integer;
 begin
   if Assigned(lFilter) then begin
     Self.Width := lFilter.Left + lFilter.Width + 10;
-    sbSuppliers.Top := ( gbSuppliers.Height - sbSuppliers.Height) div 2;
-    lFilter.Top := ( gbSuppliers.Height - lFilter.Height) div 2;
+    if FVertical then begin
+      allHeight := sbSuppliers.Height + lFilter.Height + 3;
+      if (gbSuppliers.Height - allHeight > 1) then
+        sbTop := ( gbSuppliers.Height - allHeight) div 2
+      else
+        sbTop := 2;
+      sbSuppliers.Top := sbTop;
+      lFilter.Top := sbSuppliers.Top + sbSuppliers.Height + 3;
+    end
+    else begin
+      sbSuppliers.Top := ( gbSuppliers.Height - sbSuppliers.Height) div 2;
+      lFilter.Top := ( gbSuppliers.Height - lFilter.Height) div 2;
+    end;
   end;
 end;
 
@@ -215,6 +233,25 @@ end;
 procedure TframeFilterSuppliers.FrameResize(Sender: TObject);
 begin
   ProcessResize;
+end;
+
+constructor TframeFilterSuppliers.CreateVertical(AOwner: TComponent;
+  Vertical: Boolean);
+begin
+  FVertical := Vertical;
+  inherited Create(AOwner);
+  InternalCreate();
+end;
+
+procedure TframeFilterSuppliers.InternalCreate;
+begin
+  FCanvas := TControlCanvas.Create;
+  TControlCanvas(FCanvas).Control := Self;
+
+  CreateVisualComponent;
+
+  gbSuppliers.ControlStyle := gbSuppliers.ControlStyle - [csParentBackground] + [csOpaque];
+  Self.ControlStyle := Self.ControlStyle - [csParentBackground] + [csOpaque];
 end;
 
 end.

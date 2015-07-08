@@ -100,6 +100,7 @@ begin
     CheckItemPeriodEquals(orderItem, '02.04.2012', '01.04.2012', False);
     CheckItemPeriodEquals(orderItem, '2012.01.04', '01.04.2012', True);
     CheckItemPeriodEquals(orderItem, '01.04.2012', '2012.01.04', True);
+    CheckItemPeriodEquals(orderItem, '05.04.2012', '01.01.2015', True);
   finally
     orderItem.Free;
   end;

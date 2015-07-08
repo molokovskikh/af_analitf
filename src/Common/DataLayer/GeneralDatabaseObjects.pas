@@ -830,6 +830,7 @@ begin
 +'    `EAN13`, '
 +'    `CodeOKP`, '
 +'    `Series`, '
++'    `Exp`, '
 +'    `CryptCost` , '
 +'    `COREID`  ';
 end;
@@ -869,6 +870,7 @@ begin
 +'    `EAN13`                varchar(20) default null            , '
 +'    `CodeOKP`              varchar(50) default null            , '
 +'    `Series`               varchar(20) default null            , '
++'    `Exp`               date default null            , '
 +'    `CryptCost`    VARCHAR(32) default null                    , '
 +'    `COREID` bigint(20) not null AUTO_INCREMENT                , '
 +'    primary key (`COREID`)                                     , ' 

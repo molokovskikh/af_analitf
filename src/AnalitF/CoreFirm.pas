@@ -127,6 +127,7 @@ type
     adsCoreMarkup: TFloatField;
     adsAvgOrdersOrderCountAvg: TFloatField;
     adsCoreOrdersComment: TStringField;
+    adsCoreExp: TDateField;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);

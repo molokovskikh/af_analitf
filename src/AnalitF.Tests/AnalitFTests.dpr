@@ -16,6 +16,7 @@ uses
 
   VCLFixPack in '..\AnalitF\Helpers\VCLFixPack.pas',
   LU_MutexSystem in '..\Common\System\LU_MutexSystem.pas',
+  VistaAltFixUnit in '..\Common\Classes\VistaAltFixUnit.pas',
   Main in '..\AnalitF\Main.pas' {MainForm},
   DModule in '..\AnalitF\DModule.pas' {DM: TDataModule},
   AProc in '..\AnalitF\AProc.pas',
@@ -174,6 +175,11 @@ uses
   DownloadAppFiles in '..\AnalitF\Helpers\DownloadAppFiles.pas',
   U_LegendHolder in '..\AnalitF\BusinessLogic\U_LegendHolder.pas',
   U_WaybillGridFactory in '..\AnalitF\Views\U_WaybillGridFactory.pas',
+  U_AwaitedProductsForm in '..\AnalitF\Views\U_AwaitedProductsForm.pas' {AwaitedProductsForm},
+  U_AddAwaitedProducts in '..\AnalitF\Views\U_AddAwaitedProducts.pas' {AddAwaitedProducts},
+  U_CheckTCPThread in '..\AnalitF\Helpers\U_CheckTCPThread.pas',
+  U_frameRejectedPosition in '..\AnalitF\Views\U_frameRejectedPosition.pas' {frameRejectedPosition: TFrame},
+  U_InstallNetThread in '..\AnalitF\Helpers\U_InstallNetThread.pas',
 
 //end files
   
@@ -186,7 +192,8 @@ uses
   MappingTests in 'MappingTests.pas',
   DBRestoreTests in 'DBRestoreTests.pas',
   WaybillCalculationTests in 'WaybillCalculationTests.pas',
-  WaybillGridColumnTests in 'WaybillGridColumnTests.pas';
+  WaybillGridColumnTests in 'WaybillGridColumnTests.pas',
+  InstallNetThreadTests in 'InstallNetThreadTests.pas';
 
 {$R *.res}
 

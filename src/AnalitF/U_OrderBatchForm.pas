@@ -260,6 +260,7 @@ type
     adsCoreCode: TStringField;
     adsCoreCodeCr: TStringField;
     adsCorePeriod: TStringField;
+    adsCoreExp: TDateField;
     adsCoreVolume: TStringField;
     adsCoreNote: TStringField;
     adsCoreCost: TFloatField;
@@ -368,7 +369,7 @@ begin
   end;
 
   if ((StatusField.Value and Integer(osOrderedLikeFrozen)) > 0)
-    and AnsiSameText(Column.Field.FieldName, 'SynonymName')
+    and AnsiSameText(Column.FieldName, 'SynonymName')
   then
     Background := LegendHolder.Legends[lnOrderedLikeFrozen];
 end;
@@ -472,7 +473,7 @@ begin
   TDBGridHelper.AddColumn(dbgCore, 'Note', 'Примечание', 30);
   column := TDBGridHelper.AddColumn(dbgCore, 'Doc', 'Документ');
   column.Visible := False;
-  column := TDBGridHelper.AddColumn(dbgCore, 'Period', 'Срок годн.', 85);
+  column := TDBGridHelper.AddColumn(dbgCore, 'Exp', 'Срок годн.', 85);
   column.Alignment := taCenter;
   TDBGridHelper.AddColumn(dbgCore, 'PriceName', 'Прайс-лист', 85);
   column := TDBGridHelper.AddColumn(dbgCore, 'RegionName', 'Регион', 72);
@@ -1534,11 +1535,11 @@ begin
     if adsCore.FieldByName('vitallyimportant').AsBoolean then
       AFont.Color := LegendHolder.Legends[lnVitallyImportant];
     //если уцененный товар, изменяем цвет
-    if adsCore.FieldByName('Junk').AsBoolean and (AnsiIndexText(Column.Field.FieldName, ['Period', 'Cost']) > -1)
+    if adsCore.FieldByName('Junk').AsBoolean and (AnsiIndexText(Column.FieldName, ['Exp', 'Cost']) > -1)
     then
       Background := LegendHolder.Legends[lnJunk];
     //ожидаемый товар выделяем зеленым
-    if adsCore.FieldByName('Await').AsBoolean and AnsiSameText(Column.Field.FieldName, 'SynonymName') then
+    if adsCore.FieldByName('Await').AsBoolean and AnsiSameText(Column.FieldName, 'SynonymName') then
       Background := LegendHolder.Legends[lnAwait];
   end;
 end;
@@ -1829,6 +1830,7 @@ begin
   adsCoreCode := TDataSetHelper.AddStringField(adsCore, 'Code');
   adsCoreCodeCr := TDataSetHelper.AddStringField(adsCore, 'CodeCr');
   adsCorePeriod := TDataSetHelper.AddStringField(adsCore, 'Period');
+  adsCoreExp := TDataSetHelper.AddDateField(adsCore, 'Exp');
   adsCoreVolume := TDataSetHelper.AddStringField(adsCore, 'Volume');
   adsCoreNote := TDataSetHelper.AddStringField(adsCore, 'Note', 100);
   adsCoreCost := TDataSetHelper.AddFloatField(adsCore, 'Cost');

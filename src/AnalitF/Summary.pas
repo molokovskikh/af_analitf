@@ -110,6 +110,7 @@ type
     adsSummaryServerDocumentId: TLargeintField;
     adsSummarySupplierCost: TFloatField;
     adsSummaryWaybillQuantity: TIntegerField;
+    adsSummaryExp: TDateField;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryCurrentGetCellParams(Sender: TObject; Column: TColumnEh;

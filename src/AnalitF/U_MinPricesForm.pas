@@ -145,6 +145,7 @@ type
     adsCoreCode: TStringField;
     adsCoreCodeCr: TStringField;
     adsCorePeriod: TStringField;
+    adsCoreExp: TDateField;
     adsCoreVolume: TStringField;
     adsCoreNote: TStringField;
     adsCoreCost: TFloatField;
@@ -411,7 +412,7 @@ begin
   TDBGridHelper.AddColumn(dbgCore, 'Note', 'Примечание', 30);
   column := TDBGridHelper.AddColumn(dbgCore, 'Doc', 'Документ');
   column.Visible := False;
-  column := TDBGridHelper.AddColumn(dbgCore, 'Period', 'Срок годн.', 85);
+  column := TDBGridHelper.AddColumn(dbgCore, 'Exp', 'Срок годн.', 85);
   column.Alignment := taCenter;
   TDBGridHelper.AddColumn(dbgCore, 'PriceName', 'Прайс-лист', 85);
   column := TDBGridHelper.AddColumn(dbgCore, 'RegionName', 'Регион', 72);
@@ -916,6 +917,7 @@ begin
   adsCoreCode := TDataSetHelper.AddStringField(adsCore, 'Code');
   adsCoreCodeCr := TDataSetHelper.AddStringField(adsCore, 'CodeCr');
   adsCorePeriod := TDataSetHelper.AddStringField(adsCore, 'Period');
+  adsCoreExp := TDataSetHelper.AddDateField(adsCore, 'Exp');
   adsCoreVolume := TDataSetHelper.AddStringField(adsCore, 'Volume');
   adsCoreNote := TDataSetHelper.AddStringField(adsCore, 'Note', 100);
   adsCoreCost := TDataSetHelper.AddFloatField(adsCore, 'Cost');

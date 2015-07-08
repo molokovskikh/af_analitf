@@ -962,6 +962,7 @@ begin
       'Отправить их сейчас?', MB_ICONQUESTION or MB_YESNO) = IDYES then
       RunExchange([ eaSendOrders]);
   end;
+  DM.StopInstallNet;
 end;
 
 procedure TMainForm.actFindExecute(Sender: TObject);
@@ -1116,8 +1117,9 @@ begin
     if E.Message <> SCannotFocus then begin
       S := 'Sender = ' + Iif(Assigned(Sender), Sender.ClassName, 'nil');
 
-      if not JustRun and (E is EMyError) and not ProcessFatalMySqlError
-        and  DatabaseController.IsFatalError(EMyError(E))
+      if not JustRun and not ProcessFatalMySqlError and
+        ( ( (E is EMyError) and  DatabaseController.IsFatalError(EMyError(E)) )
+          or (E is EAccessViolation))
       then begin
         ProcessFatalMySqlError := True;
         WriteExchangeLog('OnMainAppEx',
@@ -2123,7 +2125,6 @@ try
 
     tmrNeedUpdateCheck.Enabled := True;
   end;
-
 finally
   UpdateToolBar;
   //Обновляем ToolBar в случае смены клиента после обновления
@@ -2199,7 +2200,7 @@ var
   id : String;
   fileName : String;
 begin
-  if AnsiCompareText(Column.Field.FieldName, 'Header') = 0 then begin
+  if AnsiCompareText(Column.FieldName, 'Header') = 0 then begin
     id := adsNews.FieldByName('Id').AsString;
     fileName := RootFolder() + SDirNews + '\' + id + '.html';
     if FileExists(fileName) then
@@ -2211,7 +2212,7 @@ procedure TMainForm.dbgNewsGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
 begin
-  if AnsiCompareText(Column.Field.FieldName, 'Header') = 0 then begin
+  if AnsiCompareText(Column.FieldName, 'Header') = 0 then begin
     AFont.Style := AFont.Style + [fsUnderline];
     AFont.Color := clHotLight;
   end;

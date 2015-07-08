@@ -132,6 +132,7 @@ type
     adsCoreRetailVitallyImportant: TBooleanField;
     adsCoreMarkup: TFloatField;
     adsAvgOrdersOrderCountAvg: TFloatField;
+    adsCoreExp: TDateField;
     procedure FormCreate(Sender: TObject);
     procedure adsCoreBeforeUpdateExecute(Sender: TCustomMyDataSet;
       StatementTypes: TStatementTypes; Params: TDAParams);
@@ -1055,6 +1056,7 @@ var
   synonymFirmColumn : TColumnEh;
   priceRetColumn : TColumnEh;
   producerNameColumn : TColumnEh;
+  periodColumn : TColumnEh;
   
   procedure ChangeTitleCaption(FieldName, NewTitleCaption : String);
   var
@@ -1068,6 +1070,10 @@ var
 begin
   Grid.AutoFitColWidths := False;
   try
+  periodColumn := ColumnByNameT(Grid, 'Period');
+  if Assigned(periodColumn) then begin
+    periodColumn.FieldName := 'Exp';
+  end;
   priceRetColumn := ColumnByNameT(Grid, 'PriceRet');
   if not Assigned(priceRetColumn) then
     priceRetColumn := ColumnByNameT(Grid, 'CryptPriceRet');

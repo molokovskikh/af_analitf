@@ -304,7 +304,8 @@ begin
 +'    `ServerOrderListId`,  '
 +'    `EAN13`, '
 +'    `CodeOKP`, '
-+'    `Series` ';
++'    `Series`, '
++'    `Exp` ';
 end;
 
 function TPostedOrderListsTable.GetCreateSQL(DatabasePrefix: String): String;
@@ -354,6 +355,7 @@ begin
 +'    `EAN13`                varchar(20) default null            , '
 +'    `CodeOKP`              varchar(50) default null            , '
 +'    `Series`               varchar(20) default null            , '
++'    `Exp`               date default null            , '
 +'    primary key (`ID`)                                   , '
 +'    unique key `PK_ORDERS` (`ID`)                        , '
 +'    key `FK_ORDERS_CLIENTID` (`CLIENTID`)                , '
@@ -800,7 +802,8 @@ begin
 +'    `ServerOrderListId`,  '
 +'    `EAN13`, '
 +'    `CodeOKP`, '
-+'    `Series` ';
++'    `Series`, '
++'    `Exp` ';
 end;
 
 function TCurrentOrderListsTable.GetCreateSQL(
@@ -853,6 +856,7 @@ begin
 +'    `EAN13`                varchar(20) default null            , '
 +'    `CodeOKP`              varchar(50) default null            , '
 +'    `Series`               varchar(20) default null            , '
++'    `Exp`               date default null            , '
 +'    primary key (`ID`)                                   , '
 +'    unique key `PK_ORDERS` (`ID`)                        , '
 +'    key `FK_ORDERS_CLIENTID` (`CLIENTID`)                , '

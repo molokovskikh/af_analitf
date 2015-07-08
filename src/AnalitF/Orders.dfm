@@ -551,6 +551,7 @@ inherited OrdersForm: TOrdersForm
       '    ol.RetailCost,'
       '    GroupMaxProducerCosts.MaxProducerCost,'
       '    ol.Period,'
+      '    ol.Exp,'
       '    Producers.Name as ProducerName,'
       '    ol.RetailVitallyImportant,'
       '    ol.Comment,'
@@ -779,6 +780,9 @@ inherited OrdersForm: TOrdersForm
     end
     object adsOrdersQuantity: TStringField
       FieldName = 'Quantity'
+    end
+    object adsOrdersExp: TDateField
+      FieldName = 'Exp'
     end
   end
   object ActionList: TActionList

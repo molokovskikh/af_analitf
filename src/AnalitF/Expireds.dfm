@@ -349,6 +349,7 @@ inherited ExpiredsForm: TExpiredsForm
       '    Core.CodeCr,'
       '    Core.Note,'
       '    Core.Period,'
+      '    Core.Exp,'
       '    Core.Volume,'
       '    Core.Cost as RealCost,'
       '  if(dop.OtherDelay is null,'
@@ -459,6 +460,7 @@ inherited ExpiredsForm: TExpiredsForm
       '    Core.CodeCr,'
       '    Core.Note,'
       '    Core.Period,'
+      '    Core.Exp,'
       '    Core.Volume,'
       '    Core.Cost as RealCost,'
       '  if(dop.OtherDelay is null,'
@@ -785,6 +787,9 @@ inherited ExpiredsForm: TExpiredsForm
     end
     object adsExpiredsMarkup: TFloatField
       FieldName = 'Markup'
+    end
+    object adsExpiredsExp: TDateField
+      FieldName = 'Exp'
     end
   end
 end

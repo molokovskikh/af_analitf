@@ -41,6 +41,8 @@ begin
       FHTTPName,
       FHTTPPass,
       OnConnectError,
+      DM.SerBeg,
+      DM.SerEnd,
       ReceiveHTTP);
     try
 

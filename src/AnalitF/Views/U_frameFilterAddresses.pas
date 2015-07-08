@@ -63,7 +63,8 @@ type
       AHeight : Integer;
       ADBGrid : TToughDBGrid;
       AOnChangeCheckBox : TThreadMethod;
-      AOnChangeFilter : TThreadMethod) : TframeFilterAddresses;
+      AOnChangeFilter : TThreadMethod;
+      ACheckBoxCaption : String = '') : TframeFilterAddresses;
 
     procedure PrepareFrame;
     procedure ProcessChangeFilter;
@@ -85,7 +86,8 @@ class function TframeFilterAddresses.AddFrame(Owner: TComponent;
   AHeight : Integer;
   ADBGrid : TToughDBGrid;
   AOnChangeCheckBox : TThreadMethod;
-  AOnChangeFilter : TThreadMethod): TframeFilterAddresses;
+  AOnChangeFilter : TThreadMethod;
+  ACheckBoxCaption : String = ''): TframeFilterAddresses;
 begin
   Result := TframeFilterAddresses.Create(Owner);
   Result.Name := '';
@@ -97,6 +99,8 @@ begin
   Result.FOnChangeCheckBox := AOnChangeCheckBox;
   Result.FOnChangeFilter := AOnChangeFilter;
   Result.FDBGrid := ADBGrid;
+  if (ACheckBoxCaption <> '') then
+    Result.cbAllOrders.Caption := ACheckBoxCaption;
   Result.PrepareFrame;
 end;
 
@@ -184,6 +188,7 @@ begin
     FDBGrid.OnGetCellParams := DBGridGetCellParams;
   end;
   ProcessChangeCheckBox;
+  Self.Width := lFilter.Left + lFilter.Canvas.TextWidth(filterText) + 10;
 end;
 
 procedure TframeFilterAddresses.AllOrdersClick(Sender: TObject);

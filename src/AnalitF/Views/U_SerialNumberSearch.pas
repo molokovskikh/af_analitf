@@ -34,6 +34,7 @@ type
     tmrShowCertificateWarning: TTimer;
     adsSerialNumberSearchServerId: TLargeintField;
     adsSerialNumberSearchServerDocumentId: TLargeintField;
+    adsSerialNumberSearchDownloadId: TLargeintField;
     procedure FormHide(Sender: TObject);
     procedure eSearchKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
@@ -117,6 +118,7 @@ begin
   dbgSerialNumberSearch.AutoFitColWidths := False;
   try
     TDBGridHelper.AddColumn(dbgSerialNumberSearch, 'LocalWriteTime', 'Дата документа', dbgSerialNumberSearch.Canvas.TextWidth('20110920'));
+    TDBGridHelper.AddColumn(dbgSerialNumberSearch, 'DownloadId', '№', 0);
     TDBGridHelper.AddColumn(dbgSerialNumberSearch, 'ProviderName', 'Поставщик', 0);
     TDBGridHelper.AddColumn(dbgSerialNumberSearch, 'Product', 'Наименование', 0);
     TDBGridHelper.AddColumn(dbgSerialNumberSearch, 'SerialNumber', 'Серия товара', 0);

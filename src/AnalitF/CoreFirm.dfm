@@ -598,6 +598,7 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.Doc,'
       '    CCore.Note,'
       '    CCore.Period,'
+      '    CCore.Exp,'
       '    CCore.Await,'
       '    CCore.Junk,'
       '    CCore.Cost as RealCost,'
@@ -731,6 +732,7 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.Doc,'
       '    CCore.Note,'
       '    CCore.Period,'
+      '    CCore.Exp,'
       '    CCore.Await,'
       '    CCore.Junk,'
       '    CCore.Cost as RealCost,'
@@ -1159,6 +1161,9 @@ object CoreFirmForm: TCoreFirmForm
       FieldName = 'OrdersComment'
       Size = 255
     end
+    object adsCoreExp: TDateField
+      FieldName = 'Exp'
+    end
   end
   object adsCoreWithLike: TMyQuery
     SQL.Strings = (
@@ -1184,6 +1189,7 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.Doc,'
       '    CCore.Note,'
       '    CCore.Period,'
+      '    CCore.Exp,'
       '    CCore.Await,'
       '    CCore.Junk,'
       '    CCore.Cost as RealCost,'

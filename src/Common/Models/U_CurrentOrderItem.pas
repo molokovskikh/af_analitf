@@ -137,7 +137,7 @@ begin
     if TryStrToPeriod(Period, orderPeriod) and
        TryStrToPeriod(aOfferPeriod, offerPeriod)
     then
-      Result := Period <= aOfferPeriod
+      Result := orderPeriod <= offerPeriod
     else
       Result := True;
   end;

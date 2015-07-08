@@ -677,6 +677,7 @@ inherited SummaryForm: TSummaryForm
       '    Core.Quantity,'
       '    Core.Note,'
       '    Core.Period,'
+      '    Core.Exp,'
       '    Core.Junk,'
       '    Core.Await,'
       '    Core.CODE,'
@@ -782,6 +783,7 @@ inherited SummaryForm: TSummaryForm
       '    PostedOrderLists.CoreQuantity as Quantity,'
       '    PostedOrderLists.Note,'
       '    PostedOrderLists.Period,'
+      '    PostedOrderLists.Exp,'
       '    PostedOrderLists.Junk,'
       '    PostedOrderLists.Await,'
       '    PostedOrderLists.CODE,'
@@ -918,6 +920,7 @@ inherited SummaryForm: TSummaryForm
       '    Core.Quantity,'
       '    Core.Note,'
       '    Core.Period,'
+      '    Core.Exp,'
       '    Core.Junk,'
       '    Core.Await,'
       '    Core.CODE,'
@@ -1016,6 +1019,7 @@ inherited SummaryForm: TSummaryForm
       '    Core.Quantity,'
       '    Core.Note,'
       '    Core.Period,'
+      '    Core.Exp,'
       '    Core.Junk,'
       '    Core.Await,'
       '    Core.CODE,'
@@ -1305,6 +1309,9 @@ inherited SummaryForm: TSummaryForm
     end
     object adsSummaryWaybillQuantity: TIntegerField
       FieldName = 'WaybillQuantity'
+    end
+    object adsSummaryExp: TDateField
+      FieldName = 'Exp'
     end
   end
   object tmrFillReport: TTimer
