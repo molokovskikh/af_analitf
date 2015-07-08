@@ -2125,10 +2125,6 @@ try
 
     tmrNeedUpdateCheck.Enabled := True;
   end;
-
-  //≈сли все хорошо, то запускаем нитку установки
-  DM.StartInstallNet;
-
 finally
   UpdateToolBar;
   //ќбновл€ем ToolBar в случае смены клиента после обновлени€

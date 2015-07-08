@@ -3789,6 +3789,8 @@ begin
     try
       ImportData;
       ProcessFatalMySqlError := False;
+      if FileExists(ExePath + SDirIn + '\net.txt') then
+        DM.StartInstallNet;
     except
       on EMyDb : EMyError do begin
         WriteExchangeLog('Exchange', 'Ошибка при импорте: ' + ExceptionToString(EMyDb));
