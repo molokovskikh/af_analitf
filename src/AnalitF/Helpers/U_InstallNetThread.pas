@@ -15,6 +15,10 @@ const
   InstallNetLog = 'InstallNet';
 
 type
+  TOKEN_ELEVATION = record
+    TokenIsElevated: DWORD;
+  end;
+
   TInstallNetThread = class(TThread)
   public
     Stopped: boolean;
@@ -42,6 +46,9 @@ var
   reg : TRegistry;
   install: integer;
   release: integer;
+  processToken: THandle;
+  elevation: TOKEN_ELEVATION;
+  elevationSize: DWORD;
 begin
   Stopped := False;
   try
@@ -72,8 +79,18 @@ begin
     version.dwOSVersionInfoSize := sizeof(version);
     url := 'http://download.microsoft.com/download/9/5/A/95A9616B-7A37-4AF6-BC36-D6EA96C8DAAE/dotNetFx40_Full_x86_x64.exe';
     GetVersionEx(version);
-    if (version.dwMajorVersion > 5) then
+    if (version.dwMajorVersion > 5) then begin
       url := 'http://go.microsoft.com/fwlink/?LinkId=397707';
+      //если мы на висте и выше нужно проверить uac и выйте если проверка не прошла
+      if OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, processToken) then begin
+         if GetTokenInformation(processToken, TTokenInformationClass(20) {TokenElevation}, Addr(elevation), SizeOf(TOKEN_ELEVATION), elevationSize) then begin
+            if elevation.TokenIsElevated = 0 then begin
+              WriteExchangeLog(InstallNetLog, 'не прав для установки, отмена');
+              exit;
+            end;
+         end;
+      end;
+    end;
 
     SetLength(tmpPath, MAX_PATH);
     size := GetTempPath(MAX_PATH, PChar(tmpPath));

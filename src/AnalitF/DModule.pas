@@ -1366,11 +1366,12 @@ begin
       DM.MainConnection.Close;
     end;
   end;
-
+{$ifndef DEBUG}
   FNeedUpdateByCheckHashes := not CheckCriticalLibrary or DownloadAppFilesHelper.ProcessCheckDownload();
   if FNeedUpdateByCheckHashes then
     AProc.MessageBox( 'Ошибка проверки подлинности компонентов программы. Необходимо выполнить обновление данных.',
       MB_ICONERROR or MB_OK);
+{$endif}
 end;
 
 procedure TDM.CompactDataBase();
