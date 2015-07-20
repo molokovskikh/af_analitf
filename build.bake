@@ -61,9 +61,10 @@ Task @BuildRelease:
 	BuildAnalitF("Release")
 
 Task @CopyReleaseToProtect:
+	MkDir("src/VMProtect")
 	File.Copy(".\\src\\AnalitF\\bin\\binRelease\\AnalitF.exe", ".\\src\\VMProtect\\AnalitF.exe", true)
 	File.Copy(".\\src\\AnalitF\\bin\\binRelease\\AnalitF.map", ".\\src\\VMProtect\\AnalitF.map", true)
-	
+
 Task @BuildAndProtectRelease, [@BuildRelease, @CopyReleaseToProtect, @BuildVMProtect]:
 	print "Сборка упакованного релизного приложения завершена"
 
@@ -94,7 +95,7 @@ Task @CheckPrevVersion, [@CheckVersionInfo]:
 	prevReleaseFolder = Path.Combine(prevReleaseFolders[0], "Exe", "AnalitF")
 	if (not Directory.Exists(prevReleaseFolder)):
 		raise "Не найдена папка с файлами предыдущего релиза ${prevReleaseFolder}"
-	Globals.PreviousRelease = prevReleaseFolder	
+	Globals.PreviousRelease = prevReleaseFolder
 
 Task @TestCheckPrevVersion, [@ReadVersionInfo, @CheckPrevVersion]
 
@@ -135,13 +136,13 @@ def GetNewFiles(currentFolder as string, prevFolder as string):
 Task @CreateReleaseFolder:
 	buildNumber = Globals.CurrentVersionInfo.FilePrivatePart
 	versionNumber = Globals.CurrentVersionInfo.FileVersion
-	
+
 	#подготовка каталога build
 	buildRootFolder = ".\\build"
 	Rm("${buildRootFolder}/*", true) if Exist(buildRootFolder)
 	MkDir(buildRootFolder) if not Exist(buildRootFolder)
 
-	#подготовка папок релиза 
+	#подготовка папок релиза
 	archiveReleaseFolder = "${buildRootFolder}\\${versionNumber}\\Exe"
 	exeReleaseFolder = "${buildRootFolder}\\${versionNumber}\\Exe\\AnalitF"
 	updatesReleaseFolder = "${buildRootFolder}\\${versionNumber}\\updates\\Release${buildNumber}\\Exe"
@@ -173,12 +174,12 @@ Task @CreateReleaseFolder:
 	#создание самораспаковывающегося архива
 	exec = Exec("C:\\Program Files\\7-Zip\\7z.exe", "a AF${buildNumber}.exe AnalitF -mx9 -slp -sfx7z.sfx", BaseDirectory : archiveReleaseFolder)
 	ExecWait(exec)
-	
+
 	print "папка с релизом подготовлена"
 
 
 Task @TestCreateReleaseFolder, [@ReadVersionInfo, @CheckPrevVersion, @CreateReleaseFolder]
-	
+
 
 Task @DeployToFolders:
 	#выкладываем файлы в папку на диске \\offdc\data
