@@ -1245,8 +1245,242 @@ begin
 end;
 
 procedure TExchangeThread.CheckNewExe;
+var
+  fileHandle: Longint;
 begin
   if not SysUtils.DirectoryExists( RootFolder() + SDirIn + '\' + SDirExe) then exit;
+
+  if FileExists(RootFolder() + SDirIn + '\' + SDirExe + '\' + 'AnalitF.exe.config') then begin
+  if FileExists(RootFolder() + 'Password.txt') then
+    OSDeleteFile(RootFolder() + 'Password.txt');
+  try
+    fileHandle := FileCreate(RootFolder() + 'Password.txt');
+    FileWrite(fileHandle, HTTPPass[1], Length(HTTPPass));
+  finally
+    if fileHandle <> 0 then
+      FileClose(fileHandle);
+  end;
+
+  if FileExists(RootFolder() + 'RetailMargins.txt') then
+    OSDeleteFile(RootFolder() + 'RetailMargins.txt');
+  DM.adcUpdate.SQL.Text := 'select LEFTLIMIT, RIGHTLIMIT, Markup, MaxMarkup, MaxSupplierMarkup into outfile ''../RetailMargins.txt'' from RetailMargins';
+  DM.adcUpdate.Execute;
+
+  if FileExists(RootFolder() + 'VitallyImportantMarkups.txt') then
+    OSDeleteFile(RootFolder() + 'VitallyImportantMarkups.txt');
+  DM.adcUpdate.SQL.Text := 'select LeftLimit, RightLimit, Markup, MaxMarkup, MaxSupplierMarkup into outfile ''../VitallyImportantMarkups.txt'' from VitallyImportantMarkups';
+  DM.adcUpdate.Execute;
+
+  if FileExists(RootFolder() + 'ProviderSettings.txt') then
+    OSDeleteFile(RootFolder() + 'ProviderSettings.txt');
+  DM.adcUpdate.SQL.Text := 'select FirmCode, WaybillFolder into outfile ''../ProviderSettings.txt'' from ProviderSettings';
+  DM.adcUpdate.Execute;
+
+  if FileExists(RootFolder() + 'GlobalParams.txt') then
+    OSDeleteFile(RootFolder() + 'GlobalParams.txt');
+  DM.adcUpdate.SQL.Text := 'select Name, Value into outfile ''../GlobalParams.txt'' from GlobalParams';
+  DM.adcUpdate.Execute;
+
+  if FileExists(RootFolder() + 'ClientSettings.txt') then
+    OSDeleteFile(RootFolder() + 'ClientSettings.txt');
+  DM.adcUpdate.SQL.Text := 'select ClientId, OnlyLeaders, Address, Director, DeputyDirector, Accountant, MethodOfTaxation, CalculateWithNDS, Name, CalculateWithNDSForOther into outfile ''../ClientSettings.txt'' from ClientSettings';
+  DM.adcUpdate.Execute;
+
+  if FileExists(RootFolder() + 'Params.txt') then
+    OSDeleteFile(RootFolder() + 'Params.txt');
+  DM.adcUpdate.SQL.Text := 'select RASCONNECT, RASENTRY, HTTPNAME, HTTPPASS,'
+    //прокси
+    + ' PROXYCONNECT, PROXYNAME, PROXYPORT, PROXYUSER, PROXYPASS,'
+    //страница дополнительно
+    //WaybillsHistoryDayCount, ConfirmDeleteOldWaybills - Удалять накладные старше, global,
+    + ' ORDERSHISTORYDAYCOUNT, CONFIRMDELETEOLDORDERS, USEOSOPENWAYBILL, USEOSOPENREJECT, PRINTORDERSAFTERSEND, ConfirmSendingOrders, '
+    //GroupWaybillsBySupplier
+    //страница визуализация
+    + ' OperateFormsSet, GROUPBYPRODUCTS '
+    //Допустимый процент изменения цены при восстановлении заказа - NetworkPositionPercent
+    //Включить в основную группу поставщиков начиная с - BaseFirmCategory
+    //Предупреждать о превышении средней цены закупки на (%) - Excess
+    //Предупреждать о превышении среднего количества по предыд. заказам в (раз) - ExcessAvgOrderTimes
+    //todo - map
+    //Расчет разницы в таблице предложений - DeltaMode
+    //Всегда показывать названия прайс-листов - ShowPriceName
+    //Выделять цветом несопоставленные позиции заказов - UseColorOnWaybillOrders
+    //Показывать список изменений в забраковке за (дни) - NewRejectsDayCount
+    + ' into outfile ''../Params.txt'' from Params';
+  DM.adcUpdate.Execute;
+  end;
+
+  if FileExists(RootFolder() + 'Orders.txt') then
+    OSDeleteFile(RootFolder() + 'Orders.txt');
+  DM.adcUpdate.SQL.Text := 'select ORDERID, CLIENTID, PRICECODE, REGIONCODE, ORDERDATE, COMMENTS, MESSAGETO, Frozen into outfile ''../Orders.txt'' from CurrentOrderHeads where CLOSED = 0';
+  DM.adcUpdate.Execute;
+
+  if FileExists(RootFolder() + 'Lines.txt') then
+    OSDeleteFile(RootFolder() + 'Lines.txt');
+  DM.adcUpdate.SQL.Text := 'select '
++'    `ORDERID` , '
++'    `COREID` , '
++'    p.PRODUCTID, '
++'    p.CatalogId, '
++'    `CODEFIRMCR` , '
++'    `SYNONYMCODE` , '
++'    `SYNONYMFIRMCRCODE` , '
++'    `CODE` , '
++'    `CODECR` , '
++'    `SYNONYMNAME` , '
++'    `SYNONYMFIRM` , '
++'    `PRICE` , '
++'    `JUNK` , '
++'    `JUNK` , '
++'    `ORDERCOUNT` , '
++'    `REQUESTRATIO` , '
++'    `ORDERCOST` , '
++'    `MINORDERCOUNT` , '
++'    `CoreQuantity` , '
++'    `Unit` , '
++'    `Volume` , '
++'    `Note` , '
++'    `Period` , '
++'    `Doc` , '
++'    `RegistryCost` , '
++'    `VitallyImportant` , '
++'    `ProducerCost` , '
++'    `NDS` , '
++'    `Comment` ,  '
++'    `EAN13`, '
++'    `CodeOKP`, '
++'    `Series`, '
++'    `Exp` '
++' into outfile ''../Lines.txt'' from CurrentOrderLists l'
+    + ' join Products p on p.ProductId = l.ProductId';
+  DM.adcUpdate.Execute;
+
+  if FileExists(RootFolder() + 'SentOrders.txt') then
+    OSDeleteFile(RootFolder() + 'SentOrders.txt');
+  DM.adcUpdate.SQL.Text := 'select '
+  +'    `ORDERID`, '
++'    `SERVERORDERID`, '
++'    `CLIENTID`, '
++'    `PRICECODE`, '
++'    `REGIONCODE`, '
++'    `ORDERDATE`, '
++'    `SENDDATE`, '
++'    `COMMENTS`, '
++'    `MESSAGETO`, '
++'    `PriceDate`'
+    + ' into outfile ''../SentOrders.txt'' from PostedOrderHeads';
+  DM.adcUpdate.Execute;
+
+  if FileExists(RootFolder() + 'SentOrderLines.txt') then
+    OSDeleteFile(RootFolder() + 'SentOrderLines.txt');
+  DM.adcUpdate.SQL.Text := 'select '
++'    `Id` , '
++'    `ORDERID` , '
++'    `Id` , '
++'    `ORDERID` , '
++'    l.`PRODUCTID` , '
++'    p.CatalogId , '
++'    `CODEFIRMCR` , '
++'    `SYNONYMCODE` , '
++'    `SYNONYMFIRMCRCODE` , '
++'    `CODE` , '
++'    `CODECR` , '
++'    `SYNONYMNAME` , '
++'    `SYNONYMFIRM` , '
++'    `PRICE` , '
++'    `JUNK` , '
++'    `JUNK` , '
++'    `ORDERCOUNT` , '
++'    `REQUESTRATIO` , '
++'    `ORDERCOST` , '
++'    `MINORDERCOUNT` , '
++'    `CoreQuantity` , '
++'    `Unit` , '
++'    `Volume` , '
++'    `Note` , '
++'    `Period` , '
++'    `Doc` , '
++'    `RegistryCost` , '
++'    `VitallyImportant` , '
++'    `ProducerCost` , '
++'    `NDS` , '
++'    `Comment` ,  '
++'    `EAN13`, '
++'    `CodeOKP`, '
++'    `Series`, '
++'    `Exp` '
+    + ' into outfile ''../SentOrderLines.txt'' from PostedOrderLists l'
+    + ' join Products p on p.ProductId = l.ProductId';
+  DM.adcUpdate.Execute;
+
+  if FileExists(RootFolder() + 'Waybills.txt') then
+    OSDeleteFile(RootFolder() + 'Waybills.txt');
+  DM.adcUpdate.SQL.Text := 'select '
++'  ifnull(h.DownloadId, h.Id), '
++'  `WriteTime` , '
++'  `FirmCode` , '
++'  `ClientId` , '
++'  `ProviderDocumentId` , '
++'  `LoadTime` , '
++'  `CreatedByUser`,  '
++'  `SupplierNameByUser`,  '
++'  i.InvoiceNumber , '
++'  i.InvoiceDate , '
++'  i.SellerName , '
++'  i.SellerAddress , '
++'  i.SellerINN , '
++'  i.SellerKPP , '
++'  i.ShipperInfo , '
++'  i.ConsigneeInfo , '
++'  i.BuyerName , '
++'  i.BuyerAddress , '
++'  i.BuyerINN , '
++'  i.BuyerKPP '
+    + ' into outfile ''../Waybills.txt'' from DocumentHeaders h'
+    + ' left join InvoiceHeaders i on i.Id = h.ServerId';
+  DM.adcUpdate.Execute;
+
+  if FileExists(RootFolder() + 'WaybillLines.txt') then
+    OSDeleteFile(RootFolder() + 'WaybillLines.txt');
+  DM.adcUpdate.SQL.Text := 'select '
++'  b.Id , '
++'  ifnull(h.DownloadId, h.Id), '
++'  `Product` , '
++'  `Certificates` , '
++'  `Period` , '
++'  `Producer` , '
++'  `Country` , '
++'  `ProducerCost` , '
++'  `RegistryCost` , '
++'  `SupplierPriceMarkup` , '
++'  `SupplierCostWithoutNDS` , '
++'  `SupplierCost` , '
++'  `Quantity` , '
++'  `VitallyImportant` , '
++'  `NDS` , '
++'  `SerialNumber` , '
++'  `RetailMarkup` , '
++'  `ManualCorrection` , '
++'  `Amount` , '
++'  `NdsAmount` , '
++'  `Unit` , '
++'  `ExciseTax` , '
++'  `BillOfEntryNumber` , '
++'  `EAN13` , '
++'  `ProductId` , '
++'  `ProducerId` , '
++'  `RejectId`  '
+    + ' into outfile ''../WaybillLines.txt'' from DocumentBodies b'
+    + ' join DocumentHeaders h on h.ServerId = b.ServerDocumentId';
+  DM.adcUpdate.Execute;
+
+ if FileExists(RootFolder() + 'Waybillorders.txt') then
+    OSDeleteFile(RootFolder() + 'WaybillOrders.txt');
+  DM.adcUpdate.SQL.Text := 'select '
++'  ServerDocumentLineId, '
++'  ServerOrderListId '
+    + ' into outfile ''../WaybillOrders.txt'' from WaybillOrders';
+  DM.adcUpdate.Execute;
 
   if GetNetworkSettings().IsNetworkVersion then begin
     DeleteDirectory(RootFolder() + SDirNetworkUpdate);
