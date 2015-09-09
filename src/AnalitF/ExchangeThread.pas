@@ -1460,6 +1460,7 @@ begin
 +'  `NDS` , '
 +'  `SerialNumber` , '
 +'  `RetailMarkup` , '
++'  `ManualRetailPrice` , '
 +'  `ManualCorrection` , '
 +'  `Amount` , '
 +'  `NdsAmount` , '
