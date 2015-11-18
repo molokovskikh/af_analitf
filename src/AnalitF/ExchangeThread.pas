@@ -1312,7 +1312,8 @@ begin
 
   if FileExists(RootFolder() + 'Orders.txt') then
     OSDeleteFile(RootFolder() + 'Orders.txt');
-  DM.adcUpdate.SQL.Text := 'select ORDERID, CLIENTID, PRICECODE, REGIONCODE, ORDERDATE, COMMENTS, MESSAGETO, Frozen into outfile ''../Orders.txt'' from CurrentOrderHeads where CLOSED = 0';
+  DM.adcUpdate.SQL.Text := 'select ORDERID, CLIENTID, PRICECODE, REGIONCODE, convert_tz(`ORDERDATE`, @@session.time_zone,''+00:00''), COMMENTS, MESSAGETO, Frozen'
+    + ' into outfile ''../Orders.txt'' from CurrentOrderHeads where CLOSED = 0';
   DM.adcUpdate.Execute;
 
   if FileExists(RootFolder() + 'Lines.txt') then
@@ -1350,9 +1351,11 @@ begin
 +'    `EAN13`, '
 +'    `CodeOKP`, '
 +'    `Series`, '
-+'    `Exp` '
++'    `Exp`, '
++'    pr.Name '
 +' into outfile ''../Lines.txt'' from CurrentOrderLists l'
-    + ' join Products p on p.ProductId = l.ProductId';
++ ' left join Products p on p.ProductId = l.ProductId'
++ ' left join Producers pr on pr.Id = l.CodeFirmCr';
   DM.adcUpdate.Execute;
 
   if FileExists(RootFolder() + 'SentOrders.txt') then
@@ -1363,20 +1366,20 @@ begin
 +'    `CLIENTID`, '
 +'    `PRICECODE`, '
 +'    `REGIONCODE`, '
-+'    `ORDERDATE`, '
-+'    `SENDDATE`, '
++'    convert_tz(`ORDERDATE`, @@session.time_zone,''+00:00''), '
++'    convert_tz(`SENDDATE`, @@session.time_zone,''+00:00''), '
 +'    `COMMENTS`, '
 +'    `MESSAGETO`, '
-+'    `PriceDate`'
++'    convert_tz(`PriceDate`, @@session.time_zone,''+00:00'') '
     + ' into outfile ''../SentOrders.txt'' from PostedOrderHeads';
   DM.adcUpdate.Execute;
 
   if FileExists(RootFolder() + 'SentOrderLines.txt') then
     OSDeleteFile(RootFolder() + 'SentOrderLines.txt');
   DM.adcUpdate.SQL.Text := 'select '
-+'    `Id` , '
++'    l.Id , '
 +'    `ORDERID` , '
-+'    `Id` , '
++'    l.Id , '
 +'    `ORDERID` , '
 +'    l.`PRODUCTID` , '
 +'    p.CatalogId , '
@@ -1408,20 +1411,23 @@ begin
 +'    `EAN13`, '
 +'    `CodeOKP`, '
 +'    `Series`, '
-+'    `Exp` '
++'    `Exp`, '
++'    `REALPRICE`, '
++'    pr.Name '
     + ' into outfile ''../SentOrderLines.txt'' from PostedOrderLists l'
-    + ' join Products p on p.ProductId = l.ProductId';
+    + ' left join Products p on p.ProductId = l.ProductId'
+    + ' left join Producers pr on pr.Id = l.CodeFirmCr';
   DM.adcUpdate.Execute;
 
   if FileExists(RootFolder() + 'Waybills.txt') then
     OSDeleteFile(RootFolder() + 'Waybills.txt');
   DM.adcUpdate.SQL.Text := 'select '
 +'  ifnull(h.DownloadId, h.Id), '
-+'  `WriteTime` , '
++'  convert_tz(`WriteTime`, @@session.time_zone,''+00:00''), '
 +'  `FirmCode` , '
 +'  `ClientId` , '
 +'  `ProviderDocumentId` , '
-+'  `LoadTime` , '
++'  convert_tz(`LoadTime`, @@session.time_zone,''+00:00''), '
 +'  `CreatedByUser`,  '
 +'  `SupplierNameByUser`,  '
 +'  i.InvoiceNumber , '
