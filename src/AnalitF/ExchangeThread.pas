@@ -1273,7 +1273,7 @@ begin
 
   if FileExists(RootFolder() + 'ProviderSettings.txt') then
     OSDeleteFile(RootFolder() + 'ProviderSettings.txt');
-  DM.adcUpdate.SQL.Text := 'select FirmCode, WaybillFolder into outfile ''../ProviderSettings.txt'' from ProviderSettings';
+  DM.adcUpdate.SQL.Text := 'select FirmCode, WaybillUnloadingFolder into outfile ''../ProviderSettings.txt'' from ProviderSettings';
   DM.adcUpdate.Execute;
 
   if FileExists(RootFolder() + 'GlobalParams.txt') then
