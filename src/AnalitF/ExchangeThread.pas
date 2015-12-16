@@ -1260,10 +1260,14 @@ begin
     if fileHandle <> 0 then
       FileClose(fileHandle);
   end;
-
   if FileExists(RootFolder() + 'RetailMargins.txt') then
     OSDeleteFile(RootFolder() + 'RetailMargins.txt');
   DM.adcUpdate.SQL.Text := 'select LEFTLIMIT, RIGHTLIMIT, Markup, MaxMarkup, MaxSupplierMarkup into outfile ''../RetailMargins.txt'' from RetailMargins';
+  DM.adcUpdate.Execute;
+
+  if FileExists(RootFolder() + 'AwaitedItems.txt') then
+    OSDeleteFile(RootFolder() + 'AwaitedItems.txt');
+  DM.adcUpdate.SQL.Text := 'select CatalogId, ProducerId into outfile ''../AwaitedItems.txt'' from AwaitedProducts';
   DM.adcUpdate.Execute;
 
   if FileExists(RootFolder() + 'VitallyImportantMarkups.txt') then
